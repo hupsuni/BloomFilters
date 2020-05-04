@@ -7,9 +7,12 @@ import math
 
 
 class IBloomLT:
-    pass
-
-    _M = 50
+    """
+    Simple implementation of an invertible bloom lookup table.
+    The IBLT returned will have the format for a list of lists.
+    Each list in an element, each element is of the form [idSum, hashSum, count]
+    """
+    _M = 20
     _K = 8
     SEED_RANGE = 1000000
 
@@ -35,6 +38,14 @@ class IBloomLT:
             self.element_hash = single_hash
 
     def generate_table(self, item_ids):
+        """
+        Given a list of item IDs, generate a corresponding IBLT
+        Args:
+            item_ids(list): A list of IDs for items to be included in IBLT.
+
+        Returns:
+            list: An invertible bloom lookup table in format list of lists.
+        """
         bloom = [(0, 0, 0)] * self.m
         for item in item_ids:
             hash_values = []
@@ -52,6 +63,18 @@ class IBloomLT:
         return bloom
 
     def compare_tables(self, table1, table2):
+        """
+        Compares 2 IBLTs and attempts to return the symmetric difference.
+        Args:
+            table1: Invertible bloom filter 1
+            table2: Invertible bloom filter 1
+
+        Returns:
+            list list str:
+                The symmetric difference of the IBLTs, list 1 is the extra elements from filter 1,
+                    list 2 is the extra elements from filter 2, and a string to confirm if the
+                    decoding was successful.
+        """
         if len(table1) != len(table2):
             return False
         m = len(table1)
@@ -79,17 +102,32 @@ class IBloomLT:
                             table1_differences.append(element)
                         else:
                             table2_differences.append(element)
+        success = "Success"
+        for index in range(m):
+            if table3[index][1] != 0:
+                success = "Failed"
+        return table1_differences, table2_differences, success
 
-        return table1_differences, table2_differences, "Success"
+    def peel_element(self, element_id, table, alteration):
+        """
+        Peels a single element from a given IBLT.
+        
+        Args:
+            element_id(int): The element to be peeled.
+            table(list): The invertible bloom lookup table.
+            alteration(int): The indicator as to which list this element was stored in (1 OR -1)
 
-    def peel_element(self, element, table, alteration):
+        Returns:
+            list:
+                An updated invertible bloom lookup table with the given element removed.
+        """
         hash_values = []
-        element_hash = mmh3.hash128(str(element).encode(), self.element_hash)
+        element_hash = mmh3.hash128(str(element_id).encode(), self.element_hash)
         for seed in self.seed_list:
-            hash_values.append(mmh3.hash128(str(element).encode(), seed))
+            hash_values.append(mmh3.hash128(str(element_id).encode(), seed))
         for hash_value in hash_values:
             index = hash_value % self.m
-            id_sum = table[index][0] ^ element
+            id_sum = table[index][0] ^ element_id
             if table[index][1] == 0:
                 hash_sum = element_hash
             else:
