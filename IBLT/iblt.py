@@ -1,4 +1,5 @@
 # Created By Nick Huppert on 4/5/20.
+from time import sleep
 
 import mmh3
 import random
@@ -9,10 +10,10 @@ class IBloomLT:
     pass
 
     _M = 50
-    _K = 9
+    _K = 8
     SEED_RANGE = 1000000
 
-    def __init__(self, m=_M, k=_K):
+    def __init__(self, m=_M, k=_K, seed_list=None, single_hash=None):
         """
         Constructor
 
@@ -21,28 +22,31 @@ class IBloomLT:
             k(int): Number of unique hashing algorithms to use.
         """
         random.seed()
-        self.seed_list = []
-        for i in range(k):
-            self.seed_list.append(random.randint(0, self.SEED_RANGE))
+        if seed_list is None:
+            self.seed_list = []
+            for i in range(k):
+                self.seed_list.append(random.randint(0, self.SEED_RANGE))
+        else:
+            self.seed_list = seed_list
         self.m = m
+        if single_hash is None:
+            self.element_hash = random.randint(0, self.SEED_RANGE)
+        else:
+            self.element_hash = single_hash
 
-    def generate_table(self, items, seeds=None, m=None):
-        if seeds is None:
-            seeds = self.seed_list
-        if m is None:
-            m = self.m
-        bloom = [(0, 0, 0)] * m
-        for item in items:
+    def generate_table(self, item_ids):
+        bloom = [(0, 0, 0)] * self.m
+        for item in item_ids:
             hash_values = []
-            for seed in seeds:
+            for seed in self.seed_list:
                 hash_values.append(mmh3.hash128(str(item).encode(), seed))
             for hash_value in hash_values:
-                index = hash_value % m
-                id_sum = bloom[index][0] + hash_value
+                index = hash_value % self.m
+                id_sum = bloom[index][0] ^ item
                 if bloom[index][1] == 0:
-                    hash_sum = hash_value
+                    hash_sum = mmh3.hash128(str(item).encode(), self.element_hash)
                 else:
-                    hash_sum = bloom[index][1] ^ hash_value
+                    hash_sum = bloom[index][1] ^ mmh3.hash128(str(item).encode(), self.element_hash)
                 count = bloom[index][2] + 1
                 bloom[index] = (id_sum, hash_sum, count)
         return bloom
@@ -56,36 +60,56 @@ class IBloomLT:
         table3 = [[0, 0, 0]] * m
         # Generate symmetric difference table
         for index in range(m):
-            id_sum = table1[index][0] - table2[index][0]
+            id_sum = table1[index][0] ^ table2[index][0]
             hash_sum = table1[index][1] ^ table2[index][1]
             count = table1[index][2] - table2[index][2]
             table3[index] = [id_sum, hash_sum, count]
         decodable = True
-        while decodable:
+        while decodable is True:
             decodable = False
             for index in range(m):
+                quick_check_pass = False
                 element = table3[index]
                 if element[2] == 1 or element[2] == -1:
-                    if element[0] == element[1]:
-                        table3 = self.peel_element
+                    element_hash = mmh3.hash128(str(element[0]).encode(), self.element_hash)
+                    if element_hash == element[1]:
+                        table3 = self.peel_element(element[0], table3, element[2])
                         decodable = True
                         if element[2] == 1:
                             table1_differences.append(element)
                         else:
                             table2_differences.append(element)
 
-        return table1_differences, table2_differences
+        return table1_differences, table2_differences, "Success"
 
-    def peel_element(self, element, table):
-        pass
+    def peel_element(self, element, table, alteration):
+        hash_values = []
+        element_hash = mmh3.hash128(str(element).encode(), self.element_hash)
+        for seed in self.seed_list:
+            hash_values.append(mmh3.hash128(str(element).encode(), seed))
+        for hash_value in hash_values:
+            index = hash_value % self.m
+            id_sum = table[index][0] ^ element
+            if table[index][1] == 0:
+                hash_sum = element_hash
+            else:
+                hash_sum = table[index][1] ^ element_hash
+            count = table[index][2] - alteration
+            table[index] = (id_sum, hash_sum, count)
+        return table
 
 
 bloom_table = IBloomLT()
 test_data = [
-    "test", "test2", "test3", "test4"
+    5, 9, 3245, 7653, 124, 8764, 2314, 7452, 234, 7453, 234, 56437, 1
 ]
-print(bloom_table.generate_table(test_data))
+test_data2 = [
+    5, 9, 3245, 7653, 124, 8764, 2314, 7452, 234, 7453, 234, 56437, 2, 6
+]
+bloom_table1 = bloom_table.generate_table(test_data)
+bloom_table2 = bloom_table.generate_table(test_data2)
 
-xor1 = 1 ^ 2 ^ 3 ^ 5
-xor2 = 1 ^ 2 ^ 3 ^ 4
-xor3 = 5 ^ 4
+extra1, extra2, success = (bloom_table.compare_tables(bloom_table1, bloom_table2))
+print("Table 1 contains extra elements: " + str(extra1))
+print("Table 2 contains extra elements: " + str(extra2))
+print(success)
