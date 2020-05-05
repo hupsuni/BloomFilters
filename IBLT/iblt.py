@@ -1,9 +1,6 @@
 # Created By Nick Huppert on 4/5/20.
-from time import sleep
-
 import mmh3
 import random
-import math
 
 
 class IBloomLT:
@@ -147,7 +144,7 @@ test_data2 = [
 bloom_table1 = bloom_table.generate_table(test_data)
 bloom_table2 = bloom_table.generate_table(test_data2)
 
-extra1, extra2, success = (bloom_table.compare_tables(bloom_table1, bloom_table2))
+extra1, extra2, lookup_success = (bloom_table.compare_tables(bloom_table1, bloom_table2))
 print("Table 1 contains extra elements: " + str(extra1))
 print("Table 2 contains extra elements: " + str(extra2))
-print(success)
+print(lookup_success)
