@@ -134,17 +134,18 @@ class IBloomLT:
         return table
 
 
-bloom_table = IBloomLT()
-test_data = [
-    5, 9, 3245, 7653, 124, 8764, 2314, 7452, 234, 7453, 234, 56437, 1
-]
-test_data2 = [
-    5, 9, 3245, 7653, 124, 8764, 2314, 7452, 234, 7453, 234, 56437, 2, 6
-]
-bloom_table1 = bloom_table.generate_table(test_data)
-bloom_table2 = bloom_table.generate_table(test_data2)
+if __name__ == "__main__":
+    bloom_table = IBloomLT()
+    test_data = [
+        5, 9, 3245, 7653, 124, 8764, 2314, 7452, 234, 7453, 234, 56437, 1
+    ]
+    test_data2 = [
+        5, 9, 3245, 7653, 124, 8764, 2314, 7452, 234, 7453, 234, 56437, 2, 6
+    ]
+    bloom_table1 = bloom_table.generate_table(test_data)
+    bloom_table2 = bloom_table.generate_table(test_data2)
 
-extra1, extra2, lookup_success = (bloom_table.compare_tables(bloom_table1, bloom_table2))
-print("Table 1 contains extra elements: " + str(extra1))
-print("Table 2 contains extra elements: " + str(extra2))
-print(lookup_success)
+    extra1, extra2, lookup_success = (bloom_table.compare_tables(bloom_table1, bloom_table2))
+    print("Table 1 contains extra elements: " + str(extra1))
+    print("Table 2 contains extra elements: " + str(extra2))
+    print(lookup_success)
