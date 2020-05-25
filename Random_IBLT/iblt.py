@@ -53,6 +53,9 @@ class IBloomLT:
         """
         bloom = [(0, 0, 0)] * self.m
         for item in item_ids:
+            item_hash = mmh3.hash128(str(item).encode(), self.element_hash)
+            hash_quantity = item_hash % len(self.__random_hash_decider)
+            # Continue from here
             hash_values = []
             for seed in self.seed_list:
                 hash_values.append(mmh3.hash128(str(item).encode(), seed))
