@@ -3,7 +3,7 @@ import mmh3
 import random
 
 
-class IBloomLT:
+class RIBLT:
     """
     Simple implementation of an invertible bloom lookup table.
     The IBLT returned will have the format for a list of lists.
@@ -27,7 +27,7 @@ class IBloomLT:
         random.seed()
         if seed_list is None:
             self.seed_list = []
-            for i in range(max_hashes):
+            for i in range(max_hashes + 1):
                 self.seed_list.append(random.randint(0, self.SEED_RANGE))
         else:
             self.seed_list = seed_list
@@ -39,7 +39,7 @@ class IBloomLT:
         random.seed(key_hash)
         # Generate the key count list to be used for deciding how many times an element should be hashed in the table.
         for i in range(self.MAX_RANDOM_HASHES):
-            self.__random_hash_decider.append(random.randint(self.MIN_HASHES, self.MAX_HASHES + 1))
+            self.__random_hash_decider.append(random.randint(self.MIN_HASHES, self.MAX_HASHES))
 
 # TODO - Alter to use random hash quantities
     def generate_table(self, item_ids):
@@ -54,11 +54,14 @@ class IBloomLT:
         bloom = [(0, 0, 0)] * self.m
         for item in item_ids:
             item_hash = mmh3.hash128(str(item).encode(), self.element_hash)
-            hash_quantity = item_hash % len(self.__random_hash_decider)
-            # Continue from here
+            hash_quantity = self.__random_hash_decider[item_hash % len(self.__random_hash_decider)]
+            seed_list = self.seed_list
             hash_values = []
-            for seed in self.seed_list:
-                hash_values.append(mmh3.hash128(str(item).encode(), seed))
+            print(str(item) + ":" + str(hash_quantity))
+            # TODO - Make better choices about which algo to use.
+            for i in range(hash_quantity):
+                hash_values.append(mmh3.hash128(str(item).encode(), seed_list[i]))
+
             for hash_value in hash_values:
                 index = hash_value % self.m
                 id_sum = bloom[index][0] ^ item
@@ -129,10 +132,15 @@ class IBloomLT:
             list:
                 An updated invertible bloom lookup table with the given element removed.
         """
+        item_hash = mmh3.hash128(str(element_id).encode(), self.element_hash)
         hash_values = []
         element_hash = mmh3.hash128(str(element_id).encode(), self.element_hash)
-        for seed in self.seed_list:
-            hash_values.append(mmh3.hash128(str(element_id).encode(), seed))
+        hash_quantity = self.__random_hash_decider[item_hash % len(self.__random_hash_decider)]
+        seed_list = self.seed_list
+        print(str(element_id) + ":" + str(hash_quantity))
+        # TODO - Make better choices about which algo to use.
+        for i in range(hash_quantity):
+            hash_values.append(mmh3.hash128(str(element_id).encode(), seed_list[i]))
         for hash_value in hash_values:
             index = hash_value % self.m
             id_sum = table[index][0] ^ element_id
@@ -146,17 +154,10 @@ class IBloomLT:
 
 
 if __name__ == "__main__":
-    bloom_table = IBloomLT()
-    test_data = [
-        5, 9, 3245, 7653, 124, 8764, 2314, 7452, 234, 7453, 234, 56437, 1
-    ]
-    test_data2 = [
-        5, 9, 3245, 7653, 124, 8764, 2314, 7452, 234, 7453, 234, 56437, 2, 6
-    ]
-    bloom_table1 = bloom_table.generate_table(test_data)
-    bloom_table2 = bloom_table.generate_table(test_data2)
-
-    extra1, extra2, lookup_success = (bloom_table.compare_tables(bloom_table1, bloom_table2))
-    print("Table 1 contains extra elements: " + str(extra1))
-    print("Table 2 contains extra elements: " + str(extra2))
-    print(lookup_success)
+    bloom = RIBLT()
+    elements = [1, 2, 3]
+    elements2 = [2, 4, 3]
+    bloom_full = bloom.generate_table(elements)
+    bloom_2 = bloom.generate_table(elements2)
+    diff = bloom.compare_tables(bloom_full, bloom_2)
+    print(diff)
