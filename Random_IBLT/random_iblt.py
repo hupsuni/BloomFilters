@@ -9,76 +9,114 @@ class RIBLT:
     The IBLT returned will have the format for a list of lists.
     Each list in an element, each element is of the form [idSum, hashSum, count]
     """
-    _M = 20
+
+    _M = 10
     SEED_RANGE = 1000000
     MAX_HASHES = 13
     MIN_HASHES = 3
     MAX_RANDOM_HASHES = 1000
 
-    def __init__(self, m=_M, max_hashes=MAX_HASHES, seed_list=None, key_hash=None):
+    @staticmethod
+    def generate_seed_list(seed_key, max_hashes=MAX_HASHES, seed_range=SEED_RANGE):
         """
-        Constructor
+        List of seeds to be used to derive the item locations.
 
         Args:
-            m(int): Size of bloom filter array.
-            max_hashes(int): Maximum number of unique hashing algorithms to use.
-        """
-        self.__random_hash_decider = []
-        random.seed()
-        if seed_list is None:
-            self.seed_list = []
-            for i in range(max_hashes + 1):
-                self.seed_list.append(random.randint(0, self.SEED_RANGE))
-        else:
-            self.seed_list = seed_list
-        self.m = m
-        if key_hash is None:
-            self.element_hash = random.randint(0, self.SEED_RANGE)
-        else:
-            self.element_hash = key_hash
-        random.seed(key_hash)
-        # Generate the key count list to be used for deciding how many times an element should be hashed in the table.
-        for i in range(self.MAX_RANDOM_HASHES):
-            self.__random_hash_decider.append(random.randint(self.MIN_HASHES, self.MAX_HASHES))
-
-# TODO - Alter to use random hash quantities
-    def generate_table(self, item_ids):
-        """
-        Given a list of item IDs, generate a corresponding IBLT
-        Args:
-            item_ids(list): A list of IDs for items to be included in IBLT.
+            seed_key:
+            max_hashes:
+            seed_range:
 
         Returns:
-            list: An invertible bloom lookup table in format list of lists.
+
         """
-        bloom = [(0, 0, 0)] * self.m
+        # TODO - Ensure the same seed is not selected multiple times.
+        random.seed(seed_key)
+        seed_list = []
+        for i in range(max_hashes):
+            seed_list.append(random.randint(0, seed_range))
+        print("Seed List:")
+        print(seed_list)
+        return seed_list
+
+    @staticmethod
+    def generate_hash_decider(seed_key, min_hashes=MIN_HASHES, max_hashes=MAX_HASHES, length=MAX_RANDOM_HASHES):
+        """
+        List of random numbers between min and max to decide how many times an item is hashed to locations.
+
+        Args:
+            seed_key:
+            min_hashes:
+            max_hashes:
+            length:
+
+        Returns:
+
+        """
+        random.seed(seed_key)
+        hash_decider = []
+        for i in range(length):
+            hash_decider.append(random.randint(min_hashes, max_hashes))
+        print("Decider List:")
+        print(hash_decider)
+        return hash_decider
+
+    @staticmethod
+    def generate_table(item_ids, seed_key, table_size=_M, min_hashes=MIN_HASHES,
+                       max_hashes=MAX_HASHES, hash_decider_length=MAX_RANDOM_HASHES, seed_range=MAX_RANDOM_HASHES):
+        """
+        Generate the randomized hash function quantity based IBLT
+        
+        Args:
+            item_ids:
+            seed_key:
+            table_size:
+            min_hashes:
+            max_hashes:
+            hash_decider_length:
+            seed_range:
+
+        Returns:
+
+        """
+        bloom = [(0, 0, 0)] * table_size
+        hash_decider = RIBLT.generate_hash_decider(seed_key, min_hashes, max_hashes, hash_decider_length)
+        seed_list = RIBLT.generate_seed_list(seed_key, max_hashes, seed_range)
         for item in item_ids:
-            item_hash = mmh3.hash128(str(item).encode(), self.element_hash)
-            hash_quantity = self.__random_hash_decider[item_hash % len(self.__random_hash_decider)]
-            seed_list = self.seed_list
+            item_hash = mmh3.hash128(str(item).encode(), seed_key)
+
+            hash_quantity = hash_decider[item_hash % len(hash_decider)]
             hash_values = []
             print(str(item) + ":" + str(hash_quantity))
             # TODO - Make better choices about which algo to use.
             for i in range(hash_quantity):
                 hash_values.append(mmh3.hash128(str(item).encode(), seed_list[i]))
-
             for hash_value in hash_values:
-                index = hash_value % self.m
+                index = hash_value % table_size
                 id_sum = bloom[index][0] ^ item
                 if bloom[index][1] == 0:
-                    hash_sum = mmh3.hash128(str(item).encode(), self.element_hash)
+                    hash_sum = item_hash
                 else:
-                    hash_sum = bloom[index][1] ^ mmh3.hash128(str(item).encode(), self.element_hash)
+                    hash_sum = bloom[index][1] ^ item_hash
                 count = bloom[index][2] + 1
                 bloom[index] = (id_sum, hash_sum, count)
-        return bloom
+        return bloom, seed_list, hash_decider
 
-    def compare_tables(self, table1, table2):
+    @staticmethod
+    def compare_tables(table1, table2, seed_key, seed_list=None, hash_decider=None, min_hashes=MIN_HASHES,
+                       max_hashes=MAX_HASHES, hash_decider_length=MAX_RANDOM_HASHES,
+                       seed_range=MAX_RANDOM_HASHES):
         """
         Compares 2 IBLTs and attempts to return the symmetric difference.
         Args:
             table1: Invertible bloom filter 1
-            table2: Invertible bloom filter 1
+            table2: Invertible bloom filter 2
+            seed_key:
+            seed_list:
+            hash_decider:
+            min_hashes:
+            max_hashes:
+            hash_decider_length:
+            seed_range:
 
         Returns:
             list list str:
@@ -88,76 +126,83 @@ class RIBLT:
         """
         if len(table1) != len(table2):
             return False
-        m = len(table1)
+        if hash_decider is None:
+            hash_decider = RIBLT.generate_hash_decider(seed_key, min_hashes, max_hashes, hash_decider_length)
+        if seed_list is None:
+            seed_list = RIBLT.generate_seed_list(seed_key, max_hashes, seed_range)
+        print(table1)
+        table_size = len(table1)
         table1_differences = []
         table2_differences = []
-        table3 = [[0, 0, 0]] * m
+        table3 = [[0, 0, 0]] * table_size
         # Generate symmetric difference table
-        for index in range(m):
+        for index in range(table_size):
             id_sum = table1[index][0] ^ table2[index][0]
             hash_sum = table1[index][1] ^ table2[index][1]
             count = table1[index][2] - table2[index][2]
             table3[index] = [id_sum, hash_sum, count]
+        # Begin decoding table
         decodable = True
         while decodable is True:
             decodable = False
-            for index in range(m):
-                quick_check_pass = False
+            for index in range(table_size):
                 element = table3[index]
                 if element[2] == 1 or element[2] == -1:
-                    element_hash = mmh3.hash128(str(element[0]).encode(), self.element_hash)
+                    element_hash = mmh3.hash128(str(element[0]).encode(), seed_key)
                     if element_hash == element[1]:
-                        table3 = self.peel_element(element[0], table3, element[2])
+                        table3 = RIBLT.peel_element(element[0], seed_key, table3, element[2], seed_list, hash_decider)
                         decodable = True
                         if element[2] == 1:
                             table1_differences.append(element)
                         else:
                             table2_differences.append(element)
         success = "Success"
-        for index in range(m):
+        for index in range(table_size):
             if table3[index][1] != 0:
                 success = "Failed"
         return table1_differences, table2_differences, success
 
-    def peel_element(self, element_id, table, alteration):
+    @staticmethod
+    def peel_element(element_id, seed_key, table, alteration, seed_list, hash_decider):
         """
         Peels a single element from a given IBLT.
         
         Args:
             element_id(int): The element to be peeled.
+            seed_key:
             table(list): The invertible bloom lookup table.
             alteration(int): The indicator as to which list this element was stored in (1 OR -1)
+            seed_list:
+            hash_decider:
 
         Returns:
             list:
                 An updated invertible bloom lookup table with the given element removed.
         """
-        item_hash = mmh3.hash128(str(element_id).encode(), self.element_hash)
+        item_hash = mmh3.hash128(str(element_id).encode(), seed_key)
         hash_values = []
-        element_hash = mmh3.hash128(str(element_id).encode(), self.element_hash)
-        hash_quantity = self.__random_hash_decider[item_hash % len(self.__random_hash_decider)]
-        seed_list = self.seed_list
+        hash_quantity = hash_decider[item_hash % len(hash_decider)]
         print(str(element_id) + ":" + str(hash_quantity))
         # TODO - Make better choices about which algo to use.
         for i in range(hash_quantity):
             hash_values.append(mmh3.hash128(str(element_id).encode(), seed_list[i]))
         for hash_value in hash_values:
-            index = hash_value % self.m
+            index = hash_value % len(table)
             id_sum = table[index][0] ^ element_id
             if table[index][1] == 0:
-                hash_sum = element_hash
+                hash_sum = item_hash
             else:
-                hash_sum = table[index][1] ^ element_hash
+                hash_sum = table[index][1] ^ item_hash
             count = table[index][2] - alteration
             table[index] = (id_sum, hash_sum, count)
         return table
 
 
 if __name__ == "__main__":
-    bloom = RIBLT()
     elements = [1, 2, 3]
     elements2 = [2, 4, 3]
-    bloom_full = bloom.generate_table(elements)
-    bloom_2 = bloom.generate_table(elements2)
-    diff = bloom.compare_tables(bloom_full, bloom_2)
+    bloom_full, seed_list1, hash_quantity_list1 = RIBLT.generate_table(elements, 5)
+    bloom_2, seed_list2, hash_quantity_list2 = RIBLT.generate_table(elements2, 5)
+    print("Decode::")
+    diff = RIBLT.compare_tables(bloom_full, bloom_2, 5)
     print(diff)
