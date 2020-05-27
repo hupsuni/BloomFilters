@@ -29,13 +29,14 @@ class RIBLT:
         Returns:
 
         """
-        # TODO - Ensure the same seed is not selected multiple times.
         random.seed(seed_key)
         seed_list = []
-        for i in range(max_hashes):
-            seed_list.append(random.randint(0, seed_range))
-        print("Seed List:")
-        print(seed_list)
+        i = 0
+        while i < max_hashes:
+            chosen_seed = random.randint(0, seed_range)
+            if chosen_seed not in seed_list:
+                seed_list.append(chosen_seed)
+                i += 1
         return seed_list
 
     @staticmethod
@@ -56,8 +57,6 @@ class RIBLT:
         hash_decider = []
         for i in range(length):
             hash_decider.append(random.randint(min_hashes, max_hashes))
-        print("Decider List:")
-        print(hash_decider)
         return hash_decider
 
     @staticmethod
@@ -65,7 +64,7 @@ class RIBLT:
                        max_hashes=MAX_HASHES, hash_decider_length=MAX_RANDOM_HASHES, seed_range=MAX_RANDOM_HASHES):
         """
         Generate the randomized hash function quantity based IBLT
-        
+
         Args:
             item_ids:
             seed_key:
