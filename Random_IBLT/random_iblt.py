@@ -85,7 +85,6 @@ class RIBLT:
 
             hash_quantity = hash_decider[item_hash % len(hash_decider)]
             hash_values = []
-            print(str(item) + ":" + str(hash_quantity))
             # TODO - Make better choices about which algo to use.
             for i in range(hash_quantity):
                 hash_values.append(mmh3.hash128(str(item).encode(), seed_list[i]))
@@ -129,7 +128,6 @@ class RIBLT:
             hash_decider = RIBLT.generate_hash_decider(seed_key, min_hashes, max_hashes, hash_decider_length)
         if seed_list is None:
             seed_list = RIBLT.generate_seed_list(seed_key, max_hashes, seed_range)
-        print(table1)
         table_size = len(table1)
         table1_differences = []
         table2_differences = []
@@ -181,7 +179,6 @@ class RIBLT:
         item_hash = mmh3.hash128(str(element_id).encode(), seed_key)
         hash_values = []
         hash_quantity = hash_decider[item_hash % len(hash_decider)]
-        print(str(element_id) + ":" + str(hash_quantity))
         # TODO - Make better choices about which algo to use.
         for i in range(hash_quantity):
             hash_values.append(mmh3.hash128(str(element_id).encode(), seed_list[i]))
