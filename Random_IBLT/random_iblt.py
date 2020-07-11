@@ -14,7 +14,7 @@ class RIBLT:
 
     _M = 10
     SEED_RANGE = 1000000
-    MAX_HASHES = 13
+    MAX_HASHES = 10
     MIN_HASHES = 3
     MAX_RANDOM_HASHES = 1000
 

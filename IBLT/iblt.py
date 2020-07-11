@@ -64,7 +64,7 @@ class IBloomLT:
         Compares 2 IBLTs and attempts to return the symmetric difference.
         Args:
             table1: Invertible bloom filter 1
-            table2: Invertible bloom filter 1
+            table2: Invertible bloom filter 2
 
         Returns:
             list list str:
