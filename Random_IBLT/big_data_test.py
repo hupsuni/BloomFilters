@@ -3,13 +3,12 @@ from random_iblt import RIBLT
 import random
 from random import randint
 
-
 # Generate huge table of incrementing numeric IDs
 big_table = []
 for i in range(1000000):
-    random_int = randint(1,10)
+    random_int = randint(1, 10)
     if i != 0:
-        random_int += big_table[i-1]
+        random_int += big_table[i - 1]
     big_table.append(random_int)
 
 random.seed()
