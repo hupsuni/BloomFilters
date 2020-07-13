@@ -85,16 +85,22 @@ class BloomTest:
 
 
 if __name__ == "__main__":
-    difference = .25
-    test_data1, test_data2 = BloomTest.generate_test_set(100000, difference)
+    difference = .3
+    reps = 5
+    set_size = 100000
+    test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
 
-    # Test table sizes from 60% to 80%
-    for i in range(60, 81):
-        for j in range(10):
+    # Test table sizes from 45% to 60%
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("Testing table sizes on static symmetric difference\n")
+    for i in range(45, 60):
+        for j in range(reps):
             BloomTest.test(test_data1, test_data2, symmetric_difference=difference, table_size=i/100)
 
     # Test symmetric differences from 25% to 50% on static size
-    for i in range(25, 50):
-        test_data1, test_data2 = BloomTest.generate_test_set(100000, i/100)
-        for j in range(10):
-            BloomTest.test(test_data1, test_data2, symmetric_difference=difference, table_size=.7)
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("Testing symmetric difference on static table size\n")
+    for i in range(25, 45):
+        test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
+        for j in range(reps):
+            BloomTest.test(test_data1, test_data2, symmetric_difference=i/100, table_size=.6)
