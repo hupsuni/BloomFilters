@@ -87,6 +87,7 @@ class RIBLT:
 
             hash_quantity = hash_decider[item_hash % len(hash_decider)]
             hash_values = []
+            # Calculate hash values for the item and derive the index for encoding
             for i in range(hash_quantity):
                 hash_values.append(mmh3.hash128(str(item).encode(), seed_list[i]))
             for hash_value in hash_values:
