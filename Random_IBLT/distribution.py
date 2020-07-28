@@ -21,7 +21,7 @@ class Distribution:
 
     @staticmethod
     def create_aloha_style_distribution(a, n):
-        num = []
+        distributions = []
 
         denominator = 0
         for i in range(2, n+2):
@@ -30,9 +30,9 @@ class Distribution:
         numerator = 0
         for i in range(2, n+2):
             numerator += 1/(i*(i-1)) - a/2
-            num.append((i, numerator, denominator, numerator / denominator))
+            distributions.append((i, numerator / denominator))
 
-        return num
+        return distributions
 
     @staticmethod
     def create_randomly_generated_sequence(size, minimum, maximum, a_value, seed_value):
@@ -45,11 +45,12 @@ class Distribution:
             random_number = randint(0, Distribution.MAXIMUM_ACCURACY)
             random_number = random_number/Distribution.MAXIMUM_ACCURACY
             for j in range(0, len(distribution_list)):
-                if random_number <= distribution_list[j][3]:
+                if random_number <= distribution_list[j][1]:
                     hash_list.append(distribution_list[j][0]-2+minimum)
                     break
 
         return hash_list
+
 
 if __name__ == "__main__":
 
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     last = 0
     for item in dist:
         print(item)
-        last = item[3]-sum1
+        last = item[1]-sum1
         sum1 += last
         print(last)
     print(sum1)
