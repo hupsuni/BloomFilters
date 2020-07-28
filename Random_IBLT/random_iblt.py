@@ -63,7 +63,8 @@ class RIBLT:
 
     @staticmethod
     def generate_table(item_ids, seed_key, table_size=_M, min_hashes=MIN_HASHES,
-                       max_hashes=MAX_HASHES, hash_decider_length=MAX_RANDOM_HASHES, seed_range=MAX_RANDOM_HASHES):
+                       max_hashes=MAX_HASHES, hash_decider=None, hash_decider_length=MAX_RANDOM_HASHES,
+                       seed_range=MAX_RANDOM_HASHES):
         """
         Generate the randomized hash function quantity based IBLT
 
@@ -73,6 +74,7 @@ class RIBLT:
             table_size: Size of the IBLT.
             min_hashes: Lower bound for total hashes to be used.
             max_hashes: Upper bound for total hashes to be used.
+            hash_decider(list[int]): List of random numbers for hashing iterations.
             hash_decider_length: Size of the list of random numbers determining the amount of times an item is added.
             seed_range: The upper bound of the values of any given seed key.
 
@@ -80,7 +82,8 @@ class RIBLT:
             tuple[list[tuple], list[int], list[int]]: An IBLT as a list of tuples, each element is of the form (idSum, hashSum, count).
         """
         bloom = [(0, 0, 0)] * table_size
-        hash_decider = RIBLT.generate_hash_decider(seed_key, min_hashes, max_hashes, hash_decider_length)
+        if hash_decider is None:
+            hash_decider = RIBLT.generate_hash_decider(seed_key, min_hashes, max_hashes, hash_decider_length)
         seed_list = RIBLT.generate_seed_list(seed_key, max_hashes, seed_range)
         for item in item_ids:
             item_hash = mmh3.hash128(str(item).encode(), seed_key)
@@ -112,7 +115,7 @@ class RIBLT:
             table2: Invertible bloom filter 2
             seed_key: Shared key to instantiate hash functions.
             seed_list: List of seed keys for hashing item ids.
-            hash_decider: List of random numbers for hashing iterations.
+            hash_decider(list[int]): List of random numbers for hashing iterations.
             min_hashes: Lower bound for total hashes to be used.
             max_hashes: Upper bound for total hashes to be used.
             hash_decider_length: Size of the list of random numbers determining the amount of times an item is added.
