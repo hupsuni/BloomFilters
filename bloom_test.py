@@ -5,6 +5,7 @@ from random import randint
 from pympler import asizeof
 from IBLT.iblt import IBloomLT
 from Random_IBLT.random_iblt import RIBLT
+from distribution import Distribution
 
 
 class BloomTest:
@@ -60,6 +61,28 @@ class BloomTest:
         BloomTest.write_to_file("Random IBLT", test_set_size, table_size, symmetric_difference,
                                 average_table_size, table_creation_time, comparison_time, result[2])
 
+        # Test Random IBLT with pre generated hash decider
+        key = randint(1, 1000)
+        hash_decider = Distribution.create_randomly_generated_sequence(size=1000, minimum=3,
+                                                                       maximum=12, a_value=0,
+                                                                       seed_value=key)
+        start_time = time()
+        bloom1, x, y = RIBLT.generate_table(test_items1, seed_key=key, table_size=size, max_hashes=12, hash_decider=hash_decider)
+        end_time = time()
+        table_creation_time = end_time - start_time
+        start_time = time()
+        bloom2, a, b = RIBLT.generate_table(test_items2, seed_key=key, table_size=size, max_hashes=12, hash_decider=hash_decider)
+        end_time = time()
+        table_creation_time = (end_time - start_time + table_creation_time) / 2
+        start_time = time()
+        result = RIBLT.compare_tables(bloom1, bloom2, key, max_hashes=12, hash_decider=hash_decider)
+        end_time = time()
+        comparison_time = end_time - start_time
+        print(result[2])
+        average_table_size = (asizeof.asizeof(bloom1) + asizeof.asizeof(bloom2)) / 2
+        BloomTest.write_to_file("RALOHA IBLT", test_set_size, table_size, symmetric_difference,
+                                average_table_size, table_creation_time, comparison_time, result[2])
+
     @staticmethod
     def generate_test_set(size=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_SYMMETRIC_DIFFERENCE):
         test_items1 = []
@@ -86,23 +109,21 @@ class BloomTest:
 
 if __name__ == "__main__":
     difference = .3
-    reps = 5
+    reps = 10
     set_size = 100000
     test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
-    print(len(test_data1))
+    # Test table sizes from 45% to 60%
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("Testing table sizes on static symmetric difference\n")
+    for i in range(35, 60):
+        for j in range(reps):
+            BloomTest.test(test_data1, test_data2, symmetric_difference=difference, table_size=i/100)
 
-    # # Test table sizes from 45% to 60%
-    # with open("test_data.txt", "a") as test_data:
-    #     test_data.write("Testing table sizes on static symmetric difference\n")
-    # for i in range(45, 60):
-    #     for j in range(reps):
-    #         BloomTest.test(test_data1, test_data2, symmetric_difference=difference, table_size=i/100)
-    #
-    # # Test symmetric differences from 25% to 50% on static size
-    # with open("test_data.txt", "a") as test_data:
-    #     test_data.write("Testing symmetric difference on static table size\n")
-    # for i in range(25, 45):
-    #     test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
-    #     for j in range(reps):
-    #         BloomTest.test(test_data1, test_data2, symmetric_difference=i/100, table_size=.6)
+    # Test symmetric differences from 25% to 50% on static size
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("Testing symmetric difference on static table size\n")
+    for i in range(25, 55):
+        test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
+        for j in range(reps):
+            BloomTest.test(test_data1, test_data2, symmetric_difference=i/100, table_size=.6)
     BloomTest.test(test_data1, test_data2, .3, table_size=.51)

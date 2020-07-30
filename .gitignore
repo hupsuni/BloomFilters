@@ -1,9 +1,11 @@
 
 .idea/
-test_data.txt
+test_data_backup2.txt
 BasicBloomFilter/__pycache__/
 
 IBLT/__pycache__/
 /venv/
 
 Random_IBLT/__pycache__/
+
+test_data*
