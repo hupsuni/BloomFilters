@@ -108,7 +108,8 @@ class BloomTest:
         comparison_time = end_time - start_time
         print(result[2])
         average_table_size = (asizeof.asizeof(bloom1) + asizeof.asizeof(bloom2)) / 2
-        BloomTest.write_to_file("RALOHA IBLT", test_set_size, table_size, symmetric_difference,
+        name = "RALOHA IBLT| a=%s" % a_value
+        BloomTest.write_to_file(name, test_set_size, table_size, symmetric_difference,
                                 average_table_size, table_creation_time, comparison_time, result[2])
 
 
@@ -138,7 +139,7 @@ class BloomTest:
 
 if __name__ == "__main__":
     difference = .3
-    reps = 10
+    reps = 5
     set_size = 100000
     test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
     # Test table sizes from 45% to 60%
@@ -156,6 +157,23 @@ if __name__ == "__main__":
     #     for j in range(reps):
     #         BloomTest.test(test_data1, test_data2, symmetric_difference=i/100, table_size=.6)
     # BloomTest.test(test_data1, test_data2, .3, table_size=.51)
-    for i in range(-10, 11):
-        for j in range(reps):
-            BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
+    # for i in range(-10, 11):
+    #     for j in range(reps):
+    #         BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
+
+    # Test table sizes from 45% to 60%
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("Testing table sizes on static symmetric difference\n")
+    for a in range( -10, 10):
+        for i in range(35, 60):
+            for j in range(reps):
+                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=i/100, a_value=a)
+
+    # Test symmetric differences from 25% to 50% on static size
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("Testing symmetric difference on static table size\n")
+    for a in range(-10, 10):
+        for i in range(25, 55):
+            test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
+            for j in range(reps):
+                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i/100, table_size=.6, a_value=a)
