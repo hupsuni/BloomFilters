@@ -84,8 +84,8 @@ class BloomTest:
                                 average_table_size, table_creation_time, comparison_time, result[2])
 
     @staticmethod
-    def test_a_values(test_items1, test_items2, symmetric_difference, table_size=DEFAULT_TABLE_SIZE, a_value=0,
-                      max_hashes=12):
+    def test_a_n_values(test_items1, test_items2, symmetric_difference, table_size=DEFAULT_TABLE_SIZE, a_value=0,
+                        max_hashes=12):
         # Test Random IBLT with pre generated hash decider
         test_set_size = len(test_items1)
         size = int(test_set_size * table_size)
@@ -109,7 +109,7 @@ class BloomTest:
         comparison_time = end_time - start_time
         print(result[2])
         average_table_size = (asizeof.asizeof(bloom1) + asizeof.asizeof(bloom2)) / 2
-        name = "RALOHA IBLT| a=%s" % a_value
+        name = "RALOHA IBLT| a=%s | n=%s" % (a_value, max_hashes)
         BloomTest.write_to_file(name, test_set_size, table_size, symmetric_difference,
                                 average_table_size, table_creation_time, comparison_time, result[2])
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     BloomTest.test(test_data1, test_data2, .3, table_size=.51)
     for i in range(-10, 11):
         for j in range(reps):
-            BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
+            BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
 
     # A Value Tests
 
@@ -172,8 +172,8 @@ if __name__ == "__main__":
     for a in range(-10, 10, 2):
         for i in range(35, 60):
             for j in range(reps):
-                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
-                                        a_value=a)
+                BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
+                                          a_value=a)
 
     # Test symmetric differences from 25% to 50% on static size
     with open("test_data.txt", "a") as test_data:
@@ -182,8 +182,8 @@ if __name__ == "__main__":
         for i in range(25, 55):
             test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
             for j in range(reps):
-                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
-                                        a_value=a)
+                BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
+                                          a_value=a)
 
     # Tests on N sizes
     test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
@@ -193,8 +193,8 @@ if __name__ == "__main__":
     for a in range(5, 100, 5):
         for i in range(35, 60):
             for j in range(reps):
-                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
-                                        max_hashes=a)
+                BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
+                                          max_hashes=a)
 
     # Test symmetric differences from 25% to 50% on static size
     with open("test_data.txt", "a") as test_data:
@@ -203,8 +203,8 @@ if __name__ == "__main__":
         for i in range(25, 55):
             test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
             for j in range(reps):
-                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
-                                        max_hashes=a)
+                BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
+                                          max_hashes=a)
 
     # Tests on N sizes for changing a values
     test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
@@ -215,8 +215,8 @@ if __name__ == "__main__":
         for a in range(-10, 10, 2):
             for i in range(35, 60):
                 for j in range(reps):
-                    BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
-                                            max_hashes=n, a_value=a)
+                    BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
+                                              max_hashes=n, a_value=a)
 
     # Test symmetric differences from 25% to 50% on static size
     with open("test_data.txt", "a") as test_data:
@@ -226,5 +226,5 @@ if __name__ == "__main__":
             for i in range(25, 55):
                 test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
                 for j in range(reps):
-                    BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
-                                            max_hashes=n, a_value=a)
+                    BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
+                                              max_hashes=n, a_value=a)

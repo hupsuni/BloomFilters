@@ -159,7 +159,7 @@ if __name__ == "__main__":
     # BloomTest.test(test_data1, test_data2, .3, table_size=.51)
     # for i in range(-10, 11):
     #     for j in range(reps):
-    #         BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
+    #         BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
 
     # Test table sizes from 45% to 60%
     with open("test_data.txt", "a") as test_data:
