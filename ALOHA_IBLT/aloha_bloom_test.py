@@ -154,7 +154,7 @@ if __name__ == "__main__":
 
     # Test symmetric differences from 25% to 50% on static size
     with open("test_data.txt", "a") as test_data:
-        test_data.write("Testing symmetric difference on static table size\n")
+        test_data.write("\nTesting symmetric difference on static table size\n")
     for i in range(25, 55):
         test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
         for j in range(reps):
@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
     # Test symmetric differences from 25% to 50% on static size
     with open("test_data.txt", "a") as test_data:
-        test_data.write("Testing symmetric difference on static table size\n")
+        test_data.write("\nTesting symmetric difference on static table size\n")
     for a in range(-10, 10, 2):
         for i in range(25, 55):
             test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
@@ -185,23 +185,46 @@ if __name__ == "__main__":
                 BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
                                         a_value=a)
 
-        # Tests on N sizes
+    # Tests on N sizes
+    test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
+    # Test table sizes from 45% to 60%
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("\n\n\n\nTests on N sizes\n\nTesting table sizes on static symmetric difference\n")
+    for a in range(5, 100, 5):
+        for i in range(35, 60):
+            for j in range(reps):
+                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
+                                        max_hashes=a)
 
-        # Test table sizes from 45% to 60%
-        with open("test_data.txt", "a") as test_data:
-            test_data.write("\n\n\n\nTests on N sizes\n\nTesting table sizes on static symmetric difference\n")
-        for a in range(5, 100, 5):
+    # Test symmetric differences from 25% to 50% on static size
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("\nTesting symmetric difference on static table size\n")
+    for a in range(5, 100, 5):
+        for i in range(25, 55):
+            test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
+            for j in range(reps):
+                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
+                                        max_hashes=a)
+
+    # Tests on N sizes for changing a values
+    test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
+    # Test table sizes from 45% to 60%
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("\n\n\n\nTests on N and a varying sizes\n\nTesting table sizes on static symmetric difference\n")
+    for n in range(5, 100, 5):
+        for a in range(-10, 10, 2):
             for i in range(35, 60):
                 for j in range(reps):
                     BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
-                                            max_hashes=a)
+                                            max_hashes=n, a_value=a)
 
-        # Test symmetric differences from 25% to 50% on static size
-        with open("test_data.txt", "a") as test_data:
-            test_data.write("Testing symmetric difference on static table size\n")
-        for a in range(5, 100, 5):
+    # Test symmetric differences from 25% to 50% on static size
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("\nTesting symmetric difference on static table size\n")
+    for n in range(5, 100, 5):
+        for a in range(-10, 10, 2):
             for i in range(25, 55):
                 test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
                 for j in range(reps):
                     BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
-                                            max_hashes=a)
+                                            max_hashes=n, a_value=a)
