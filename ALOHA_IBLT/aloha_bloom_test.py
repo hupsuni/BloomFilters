@@ -5,7 +5,7 @@ from random import randint
 from pympler import asizeof
 from IBLT.iblt import IBloomLT
 from aloha_iblt import IBLT
-
+from Random_IBLT.random_iblt import RIBLT
 
 class BloomTest:
     DEFAULT_TEST_SIZE = 1000000
@@ -43,15 +43,15 @@ class BloomTest:
         # Test Random IBLT
         key = randint(1, 1000)
         start_time = time()
-        bloom1, x, y = IBLT.generate_table(test_items1, seed_key=key, table_size=size)
+        bloom1, x, y = RIBLT.generate_table(test_items1, seed_key=key, table_size=size)
         end_time = time()
         table_creation_time = end_time - start_time
         start_time = time()
-        bloom2, a, b = IBLT.generate_table(test_items2, seed_key=key, table_size=size)
+        bloom2, a, b = RIBLT.generate_table(test_items2, seed_key=key, table_size=size)
         end_time = time()
         table_creation_time = (end_time - start_time + table_creation_time) / 2
         start_time = time()
-        result = IBLT.compare_tables(bloom1, bloom2, key)
+        result = RIBLT.compare_tables(bloom1, bloom2, key)
         end_time = time()
         comparison_time = end_time - start_time
         print(result[2])

@@ -228,11 +228,11 @@ class Distribution:
         distributions = []
 
         denominator = 0
-        for i in range(2, n+2):
+        for i in range(2, n+1):
             denominator += 1/(i*(i-1)) - (a/2)
 
         numerator = 0
-        for i in range(2, n+2):
+        for i in range(2, n+1):
             numerator += 1/(i*(i-1)) - a/2
             distributions.append((i, numerator / denominator))
 
