@@ -4,18 +4,16 @@ from time import time
 from random import randint
 from pympler import asizeof
 from IBLT.iblt import IBloomLT
-from Random_IBLT.random_iblt import RIBLT
-from distribution import Distribution
+from aloha_iblt import IBLT
 
 
 class BloomTest:
-
     DEFAULT_TEST_SIZE = 1000000
     DEFAULT_TABLE_SIZE = .6
     DEFAULT_SYMMETRIC_DIFFERENCE = .4
 
     @staticmethod
-    def test(test_items1, test_items2, symmetric_difference, table_size=DEFAULT_TABLE_SIZE):
+    def test(test_items1, test_items2, symmetric_difference, a_value=0, max_hashes=12, table_size=DEFAULT_TABLE_SIZE):
 
         if len(test_items1) != len(test_items2):
             return
@@ -45,15 +43,15 @@ class BloomTest:
         # Test Random IBLT
         key = randint(1, 1000)
         start_time = time()
-        bloom1, x, y = RIBLT.generate_table(test_items1, seed_key=key, table_size=size)
+        bloom1, x, y = IBLT.generate_table(test_items1, seed_key=key, table_size=size)
         end_time = time()
         table_creation_time = end_time - start_time
         start_time = time()
-        bloom2, a, b = RIBLT.generate_table(test_items2, seed_key=key, table_size=size)
+        bloom2, a, b = IBLT.generate_table(test_items2, seed_key=key, table_size=size)
         end_time = time()
         table_creation_time = (end_time - start_time + table_creation_time) / 2
         start_time = time()
-        result = RIBLT.compare_tables(bloom1, bloom2, key)
+        result = IBLT.compare_tables(bloom1, bloom2, key)
         end_time = time()
         comparison_time = end_time - start_time
         print(result[2])
@@ -63,19 +61,21 @@ class BloomTest:
 
         # Test Random IBLT with pre generated hash decider
         key = randint(1, 1000)
-        hash_decider = Distribution.create_randomly_generated_sequence(size=1000, minimum=3,
-                                                                       maximum=12, a_value=0,
-                                                                       seed_value=key)
+        # hash_decider = Distribution.create_randomly_generated_sequence(size=1000, minimum=3,
+        #                                                                maximum=12, a_value=0,
+        #                                                                seed_value=key)
         start_time = time()
-        bloom1, x, y = RIBLT.generate_table(test_items1, seed_key=key, table_size=size, max_hashes=12, hash_decider=hash_decider)
+        bloom1, x, y = IBLT.generate_table(test_items1, seed_key=key, table_size=size, max_hashes=max_hashes,
+                                           a_value=a_value)
         end_time = time()
         table_creation_time = end_time - start_time
         start_time = time()
-        bloom2, a, b = RIBLT.generate_table(test_items2, seed_key=key, table_size=size, max_hashes=12, hash_decider=hash_decider)
+        bloom2, a, b = IBLT.generate_table(test_items2, seed_key=key, table_size=size, max_hashes=max_hashes,
+                                           a_value=a_value)
         end_time = time()
         table_creation_time = (end_time - start_time + table_creation_time) / 2
         start_time = time()
-        result = RIBLT.compare_tables(bloom1, bloom2, key, max_hashes=12, hash_decider=hash_decider)
+        result = IBLT.compare_tables(bloom1, bloom2, key, max_hashes=max_hashes, a_value=a_value)
         end_time = time()
         comparison_time = end_time - start_time
         print(result[2])
@@ -84,26 +84,27 @@ class BloomTest:
                                 average_table_size, table_creation_time, comparison_time, result[2])
 
     @staticmethod
-    def test_a_values(test_items1, test_items2, symmetric_difference, table_size=DEFAULT_TABLE_SIZE, a_value=0):
+    def test_a_values(test_items1, test_items2, symmetric_difference, table_size=DEFAULT_TABLE_SIZE, a_value=0,
+                      max_hashes=12):
         # Test Random IBLT with pre generated hash decider
         test_set_size = len(test_items1)
         size = int(test_set_size * table_size)
         key = randint(1, 1000)
-        hash_decider = Distribution.create_randomly_generated_sequence(size=1000, minimum=3,
-                                                                       maximum=12, a_value=a_value,
-                                                                       seed_value=key)
+        # hash_decider = Distribution.create_randomly_generated_sequence(size=1000, minimum=3,
+        #                                                                maximum=12, a_value=a_value,
+        #                                                                seed_value=key)
         start_time = time()
-        bloom1, x, y = RIBLT.generate_table(test_items1, seed_key=key, table_size=size, max_hashes=12,
-                                            hash_decider=hash_decider)
+        bloom1, x, y = IBLT.generate_table(test_items1, seed_key=key, table_size=size, max_hashes=max_hashes,
+                                           a_value=a_value)
         end_time = time()
         table_creation_time = end_time - start_time
         start_time = time()
-        bloom2, a, b = RIBLT.generate_table(test_items2, seed_key=key, table_size=size, max_hashes=12,
-                                            hash_decider=hash_decider)
+        bloom2, a, b = IBLT.generate_table(test_items2, seed_key=key, table_size=size, max_hashes=max_hashes,
+                                           a_value=a_value)
         end_time = time()
         table_creation_time = (end_time - start_time + table_creation_time) / 2
         start_time = time()
-        result = RIBLT.compare_tables(bloom1, bloom2, key, max_hashes=12, hash_decider=hash_decider)
+        result = IBLT.compare_tables(bloom1, bloom2, key, max_hashes=max_hashes, a_value=a_value)
         end_time = time()
         comparison_time = end_time - start_time
         print(result[2])
@@ -111,7 +112,6 @@ class BloomTest:
         name = "RALOHA IBLT| a=%s" % a_value
         BloomTest.write_to_file(name, test_set_size, table_size, symmetric_difference,
                                 average_table_size, table_creation_time, comparison_time, result[2])
-
 
     @staticmethod
     def generate_test_set(size=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_SYMMETRIC_DIFFERENCE):
@@ -141,39 +141,67 @@ if __name__ == "__main__":
     difference = .3
     reps = 5
     set_size = 100000
+
+    # Size related tests for symmetric difference/table sizes
+
     test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
     # Test table sizes from 45% to 60%
-    # with open("test_data.txt", "a") as test_data:
-    #     test_data.write("Testing table sizes on static symmetric difference\n")
-    # for i in range(35, 60):
-    #     for j in range(reps):
-    #         BloomTest.test(test_data1, test_data2, symmetric_difference=difference, table_size=i/100)
-    #
-    # # Test symmetric differences from 25% to 50% on static size
-    # with open("test_data.txt", "a") as test_data:
-    #     test_data.write("Testing symmetric difference on static table size\n")
-    # for i in range(25, 55):
-    #     test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
-    #     for j in range(reps):
-    #         BloomTest.test(test_data1, test_data2, symmetric_difference=i/100, table_size=.6)
-    # BloomTest.test(test_data1, test_data2, .3, table_size=.51)
-    # for i in range(-10, 11):
-    #     for j in range(reps):
-    #         BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("General Tests\n\nTesting table sizes on static symmetric difference\n")
+    for i in range(35, 60):
+        for j in range(reps):
+            BloomTest.test(test_data1, test_data2, symmetric_difference=difference, table_size=i/100)
+
+    # Test symmetric differences from 25% to 50% on static size
+    with open("test_data.txt", "a") as test_data:
+        test_data.write("Testing symmetric difference on static table size\n")
+    for i in range(25, 55):
+        test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
+        for j in range(reps):
+            BloomTest.test(test_data1, test_data2, symmetric_difference=i/100, table_size=.6)
+    BloomTest.test(test_data1, test_data2, .3, table_size=.51)
+    for i in range(-10, 11):
+        for j in range(reps):
+            BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
+
+    # A Value Tests
 
     # Test table sizes from 45% to 60%
     with open("test_data.txt", "a") as test_data:
-        test_data.write("Testing table sizes on static symmetric difference\n")
+        test_data.write("\n\n\n\nTests on a values\n\nTesting table sizes on static symmetric difference\n")
     for a in range(-10, 10, 2):
         for i in range(35, 60):
             for j in range(reps):
-                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=i/100, a_value=a/10)
+                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
+                                        a_value=a)
 
     # Test symmetric differences from 25% to 50% on static size
     with open("test_data.txt", "a") as test_data:
         test_data.write("Testing symmetric difference on static table size\n")
     for a in range(-10, 10, 2):
         for i in range(25, 55):
-            test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
+            test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
             for j in range(reps):
-                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i/100, table_size=.6, a_value=a/10)
+                BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
+                                        a_value=a)
+
+        # Tests on N sizes
+
+        # Test table sizes from 45% to 60%
+        with open("test_data.txt", "a") as test_data:
+            test_data.write("\n\n\n\nTests on N sizes\n\nTesting table sizes on static symmetric difference\n")
+        for a in range(5, 100, 5):
+            for i in range(35, 60):
+                for j in range(reps):
+                    BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
+                                            max_hashes=a)
+
+        # Test symmetric differences from 25% to 50% on static size
+        with open("test_data.txt", "a") as test_data:
+            test_data.write("Testing symmetric difference on static table size\n")
+        for a in range(5, 100, 5):
+            for i in range(25, 55):
+                test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
+                for j in range(reps):
+                    BloomTest.test_a_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
+                                            max_hashes=a)
