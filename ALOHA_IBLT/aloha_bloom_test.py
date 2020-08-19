@@ -144,74 +144,74 @@ if __name__ == "__main__":
 
     # Size related tests for symmetric difference/table sizes
 
+    # test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
+    # # Test table sizes from 45% to 60%
+    # with open("test_data.txt", "a") as test_data:
+    #     test_data.write("General Tests\n\nTesting table sizes on static symmetric difference\n")
+    # for i in range(35, 60):
+    #     for j in range(reps):
+    #         BloomTest.test(test_data1, test_data2, symmetric_difference=difference, table_size=i/100)
+    #
+    # # Test symmetric differences from 25% to 50% on static size
+    # with open("test_data.txt", "a") as test_data:
+    #     test_data.write("\nTesting symmetric difference on static table size\n")
+    # for i in range(25, 55):
+    #     test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
+    #     for j in range(reps):
+    #         BloomTest.test(test_data1, test_data2, symmetric_difference=i/100, table_size=.6)
+    # BloomTest.test(test_data1, test_data2, .3, table_size=.51)
+    # for i in range(-10, 11):
+    #     for j in range(reps):
+    #         BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
+    #
+    # # A Value Tests
+    #
+    # # Test table sizes from 45% to 60%
+    # with open("test_data.txt", "a") as test_data:
+    #     test_data.write("\n\n\n\nTests on a values\n\nTesting table sizes on static symmetric difference\n")
+    # for a in range(-10, 10, 2):
+    #     for i in range(35, 60):
+    #         for j in range(reps):
+    #             BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
+    #                                       a_value=a)
+    #
+    # # Test symmetric differences from 25% to 50% on static size
+    # with open("test_data.txt", "a") as test_data:
+    #     test_data.write("\nTesting symmetric difference on static table size\n")
+    # for a in range(-10, 10, 2):
+    #     for i in range(25, 55):
+    #         test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
+    #         for j in range(reps):
+    #             BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
+    #                                       a_value=a)
+    #
+    # # Tests on N sizes
+    # test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
+    # # Test table sizes from 45% to 60%
+    # with open("test_data.txt", "a") as test_data:
+    #     test_data.write("\n\n\n\nTests on N sizes\n\nTesting table sizes on static symmetric difference\n")
+    # for a in range(5, 100, 5):
+    #     for i in range(35, 60):
+    #         for j in range(reps):
+    #             BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
+    #                                       max_hashes=a)
+    #
+    # # Test symmetric differences from 25% to 50% on static size
+    # with open("test_data.txt", "a") as test_data:
+    #     test_data.write("\nTesting symmetric difference on static table size\n")
+    # for a in range(5, 100, 5):
+    #     for i in range(25, 55):
+    #         test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
+    #         for j in range(reps):
+    #             BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
+    #                                       max_hashes=a)
+    #
+    # # Tests on N sizes for changing a values
     test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
-    # Test table sizes from 45% to 60%
-    with open("test_data.txt", "a") as test_data:
-        test_data.write("General Tests\n\nTesting table sizes on static symmetric difference\n")
-    for i in range(35, 60):
-        for j in range(reps):
-            BloomTest.test(test_data1, test_data2, symmetric_difference=difference, table_size=i/100)
-
-    # Test symmetric differences from 25% to 50% on static size
-    with open("test_data.txt", "a") as test_data:
-        test_data.write("\nTesting symmetric difference on static table size\n")
-    for i in range(25, 55):
-        test_data1, test_data2 = BloomTest.generate_test_set(set_size, i/100)
-        for j in range(reps):
-            BloomTest.test(test_data1, test_data2, symmetric_difference=i/100, table_size=.6)
-    BloomTest.test(test_data1, test_data2, .3, table_size=.51)
-    for i in range(-10, 11):
-        for j in range(reps):
-            BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=.6, a_value=i)
-
-    # A Value Tests
-
-    # Test table sizes from 45% to 60%
-    with open("test_data.txt", "a") as test_data:
-        test_data.write("\n\n\n\nTests on a values\n\nTesting table sizes on static symmetric difference\n")
-    for a in range(-10, 10, 2):
-        for i in range(35, 60):
-            for j in range(reps):
-                BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
-                                          a_value=a)
-
-    # Test symmetric differences from 25% to 50% on static size
-    with open("test_data.txt", "a") as test_data:
-        test_data.write("\nTesting symmetric difference on static table size\n")
-    for a in range(-10, 10, 2):
-        for i in range(25, 55):
-            test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
-            for j in range(reps):
-                BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
-                                          a_value=a)
-
-    # Tests on N sizes
-    test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
-    # Test table sizes from 45% to 60%
-    with open("test_data.txt", "a") as test_data:
-        test_data.write("\n\n\n\nTests on N sizes\n\nTesting table sizes on static symmetric difference\n")
-    for a in range(5, 100, 5):
-        for i in range(35, 60):
-            for j in range(reps):
-                BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=difference, table_size=i / 100,
-                                          max_hashes=a)
-
-    # Test symmetric differences from 25% to 50% on static size
-    with open("test_data.txt", "a") as test_data:
-        test_data.write("\nTesting symmetric difference on static table size\n")
-    for a in range(5, 100, 5):
-        for i in range(25, 55):
-            test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
-            for j in range(reps):
-                BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
-                                          max_hashes=a)
-
-    # Tests on N sizes for changing a values
-    test_data1, test_data2 = BloomTest.generate_test_set(set_size, difference)
-    # Test table sizes from 45% to 60%
-    with open("test_data.txt", "a") as test_data:
-        test_data.write("\n\n\n\nTests on N and a varying sizes\n\nTesting table sizes on static symmetric difference\n")
-    for n in range(5, 100, 5):
+    # # Test table sizes from 45% to 60%
+    # with open("test_data.txt", "a") as test_data:
+    #     test_data.write("\n\n\n\nTests on N and a varying sizes\n\nTesting table sizes on static symmetric difference\n")
+    for n in range(0, 1, 1):
         for a in range(-10, 10, 2):
             for i in range(35, 60):
                 for j in range(reps):
@@ -219,12 +219,12 @@ if __name__ == "__main__":
                                               max_hashes=n, a_value=a)
 
     # Test symmetric differences from 25% to 50% on static size
-    with open("test_data.txt", "a") as test_data:
-        test_data.write("\nTesting symmetric difference on static table size\n")
-    for n in range(5, 100, 5):
-        for a in range(-10, 10, 2):
-            for i in range(25, 55):
-                test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
-                for j in range(reps):
-                    BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
-                                              max_hashes=n, a_value=a)
+    # with open("test_data.txt", "a") as test_data:
+    #     test_data.write("\nTesting symmetric difference on static table size\n")
+    # for n in range(0, 90, 5):
+    #     for a in range(-10, 10, 2):
+    #         for i in range(25, 55):
+    #             test_data1, test_data2 = BloomTest.generate_test_set(set_size, i / 100)
+    #             for j in range(reps):
+    #                 BloomTest.test_a_n_values(test_data1, test_data2, symmetric_difference=i / 100, table_size=.6,
+    #                                           max_hashes=n, a_value=a)
