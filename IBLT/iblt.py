@@ -10,7 +10,7 @@ class IBloomLT:
     Each list in an element, each element is of the form [idSum, hashSum, count]
     """
     _M = 20
-    _K = 8
+    _K = 3
     SEED_RANGE = 1000000
 
     def __init__(self, m=_M, k=_K, seed_list=None, single_hash=None):
