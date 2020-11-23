@@ -4,6 +4,9 @@ from aloha_iblt import IBLT as ALOHA
 from iblt import IBloomLT as IBLT
 from random_iblt import RIBLT
 from random import randint, seed, shuffle
+from threadsafe_dictionary import TSDict
+from concurrent import futures
+import threading
 
 DEFAULT_TEST_SIZE = 1000000
 DEFAULT_SYMMETRIC_DIFFERENCE = .4
@@ -14,17 +17,20 @@ DEFAULT_MAX_HASHES = 10
 
 test_number = 0
 
-results_dictionary = {
-    "IBLT": {
+results_dictionary = TSDict.instance()
 
-    },
-    "ALOHA": {
 
-    },
-    "RIBLT": {
-
-    }
-}
+# results_dictionary = {
+#     "IBLT": {
+#
+#     },
+#     "ALOHA": {
+#
+#     },
+#     "RIBLT": {
+#
+#     }
+# }
 
 
 def dictionary_test_key():
@@ -49,21 +55,21 @@ def verify_results(test_data, result):
                 success = False
                 break
 
-    if result[3] == "Failed":
+    if result[2] == "Failed":
         return success, "Table reported Failure", False
-    elif result[3] == "Success":
+    elif result[2] == "Success":
         return success, "Table reported Success", True
 
 
 def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAULT_SYMMETRIC_DIFFERENCE,
-         a_value=DEFAULT_A_VALUE, max_hashes=DEFAULT_MAX_HASHES, only_test_aloha=False):
+         a_value=DEFAULT_A_VALUE, max_hashes=DEFAULT_MAX_HASHES, only_test_aloha=False, test_string=None):
     # Bloom Table: Create time, compare time, success count, [success messages]
     counters = {"IBLT": [0, 0, 0, []],
                 "RIBLT": [0, 0, 0, []],
                 "ALOHA": [0, 0, 0, []]}
-    key_string = dictionary_test_key()
-
+    key_string = str(test_string)
     for i in range(0, reps):
+        print("Iteration %s" % str(i))
         key = randint(1, 100000)
         test_data = generate_test_data(symmetric_difference=sym_difference)
         table_size = int(len(test_data[0]) * bloom_size)
@@ -80,8 +86,8 @@ def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAUL
             results = IBLT_object.compare_tables(IBLT_a, IBLT_b)
             stop = datetime.now()
 
-            counters["IBLT"][0] += time_taken
-            counters["IBLT"][1] += (stop - start)
+            counters["IBLT"][0] += time_taken.microseconds
+            counters["IBLT"][1] += (stop - start).microseconds
 
             verify = verify_results(test_data, results)
             if verify[0] == verify[2] and verify[0] is True:
@@ -96,11 +102,11 @@ def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAUL
             time_taken = stop - start
 
             start = datetime.now()
-            results = RIBLT.compare_tables(RIBLT_a, RIBLT_b, seed_key=key, max_hashes=max_hashes)
+            results = RIBLT.compare_tables(RIBLT_a[0], RIBLT_b[0], seed_key=key, max_hashes=max_hashes)
             stop = datetime.now()
 
-            counters["RIBLT"][0] += time_taken
-            counters["RIBLT"][1] += (stop - start)
+            counters["RIBLT"][0] += time_taken.microseconds
+            counters["RIBLT"][1] += (stop - start).microseconds
 
             verify = verify_results(test_data, results)
             if verify[0] == verify[2] and verify[0] is True:
@@ -115,11 +121,11 @@ def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAUL
         time_taken = stop - start
 
         start = datetime.now()
-        results = ALOHA.compare_tables(ALOHA_a, ALOHA_b, seed_key=key, max_hashes=max_hashes, a_value=a_value)
+        results = ALOHA.compare_tables(ALOHA_a[0], ALOHA_b[0], seed_key=key, max_hashes=max_hashes, a_value=a_value)
         stop = datetime.now()
 
-        counters["ALOHA"][0] += time_taken
-        counters["ALOHA"][1] += (stop - start)
+        counters["ALOHA"][0] += time_taken.microseconds
+        counters["ALOHA"][1] += (stop - start).microseconds
 
         verify = verify_results(test_data, results)
         if verify[0] == verify[2] and verify[0] is True:
@@ -136,18 +142,14 @@ def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAUL
     for table in counters.keys():
         if only_test_aloha and table != "ALOHA":
             continue
-        results_dictionary[table][key_string]["average_creation_time"] = counters[table][0] / reps
-        results_dictionary[table][key_string]["average_comparison_time"] = counters[table][1] / reps
-        results_dictionary[table][key_string]["success_rate"] = counters[table][2] / reps
-        results_dictionary[table][key_string]["success_messages"] = counters[table][3].copy()
-        results_dictionary[table][key_string]["filter_size"] = bloom_size
-        results_dictionary[table][key_string]["symmetric_difference"] = sym_difference
-        results_dictionary[table][key_string]["a_value"] = a_value
-        results_dictionary[table][key_string]["max_hashes"] = max_hashes
-
-    with open("test_data.json", "w") as dump_data:
-        dump_data.write(json.dumps(results_dictionary))
-    print("Test %s complete" % str(test_number))
+        results_dictionary.set(table, key_string, "average_creation_time", counters[table][0] / reps)
+        results_dictionary.set(table, key_string, "average_comparison_time", counters[table][1] / reps)
+        results_dictionary.set(table, key_string, "success_rate", counters[table][2] / reps)
+        results_dictionary.set(table, key_string, "success_messages", counters[table][3].copy())
+        results_dictionary.set(table, key_string, "filter_size", bloom_size)
+        results_dictionary.set(table, key_string, "symmetric_difference", sym_difference)
+        results_dictionary.set(table, key_string, "a_value", a_value)
+        results_dictionary.set(table, key_string, "max_hashes", max_hashes)
 
 
 def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_SYMMETRIC_DIFFERENCE):
@@ -166,7 +168,7 @@ def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_
     # Populate a list of randomly generated increasing numbers.
     full_list = []
     last_number = 0
-    for i in range(0, 2*quantity):
+    for i in range(0, 2 * quantity):
         rand_increment = randint(0, 100)
         last_number += rand_increment
         full_list.append(last_number)
@@ -174,8 +176,7 @@ def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_
     second_list_indices = (int(quantity * symmetric_difference), int(quantity + quantity * symmetric_difference))
 
     shuffle(full_list)
-    shuffle(full_list)
-    shuffle(full_list)
+
     list_a = full_list[0:quantity]
     list_b = full_list[second_list_indices[0]:second_list_indices[1]]
     duplicates = full_list[second_list_indices[0]:quantity]
@@ -192,11 +193,20 @@ if __name__ == '__main__':
     max_hash_minmax = (3, 15, 1)
     a_value_minmax = (-7, 8, 2)
 
-    aloha_only = False
+    futures_list = []
 
+    total_tests = ((a_value_minmax[1] - a_value_minmax[0]) / a_value_minmax[2]) * \
+                  ((max_hash_minmax[1] - max_hash_minmax[0]) / max_hash_minmax[2]) * \
+                  ((symmetric_difference_minmax[1] - symmetric_difference_minmax[0]) /
+                   symmetric_difference_minmax[2]) * \
+                  ((table_size_minmax[1] - table_size_minmax[0]) / table_size_minmax[2])
+
+    aloha_only = False
+    # with futures.ThreadPoolExecutor() as thread_manager:
     # Test everything in one big loop
     for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
-        for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1], symmetric_difference_minmax[2]):
+        for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
+                              symmetric_difference_minmax[2]):
             for max_hash in range(max_hash_minmax[0], max_hash_minmax[1], max_hash_minmax[2]):
                 for a_val in range(a_value_minmax[0], a_value_minmax[1], a_value_minmax[2]):
                     if a_val == a_value_minmax[0]:
@@ -204,7 +214,17 @@ if __name__ == '__main__':
                     else:
                         aloha_only = True
                     test_number += 1
-                    test(bloom_size=bl_size, sym_difference=sym_diff, a_value=a_val, max_hashes=max_hash, only_test_aloha=aloha_only)
+
+                    # futures_list.append(thread_manager.submit(test, bloom_size=bl_size / 100,
+                    #                                           sym_difference=sym_diff / 100, a_value=a_val,
+                    #                                           max_hashes=max_hash, only_test_aloha=aloha_only,
+                    #                                           test_string=test_number))
+                    test(bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val,
+                         max_hashes=max_hash, only_test_aloha=aloha_only)
+                    print("Test %s of %s tests run" % (str(test_number), str(total_tests)))
+
+        with open("test_data.json", "w") as dump_data:
+            dump_data.write(json.dumps(results_dictionary.get_all()))
 
     #
     # random_data = generate_test_data(100, .2)
@@ -231,4 +251,3 @@ if __name__ == '__main__':
     #       (str(len(random_data[0])), str(len(random_data[1])), str(len(random_data[2])), str(count_a), str(count_b),
     #        str(count_dupes_a), str(count_dupes_b), str(len(random_data[0]) - count_dupes_a),
     #        str(len(random_data[1]) - count_dupes_b)))
-
