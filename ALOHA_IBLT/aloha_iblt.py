@@ -16,7 +16,7 @@ class IBLT:
 
     _M = 10
     SEED_RANGE = 1000000
-    MAX_HASHES = 10
+    MAX_HASHES = 15
     MAX_RANDOM_HASHES = 1000
     DEFAULT_A_VALUE = 0
 

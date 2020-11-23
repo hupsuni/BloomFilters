@@ -7,6 +7,7 @@ from IBLT.iblt import IBloomLT
 from aloha_iblt import IBLT
 from Random_IBLT.random_iblt import RIBLT
 
+
 class BloomTest:
     DEFAULT_TEST_SIZE = 1000000
     DEFAULT_TABLE_SIZE = .6
@@ -41,7 +42,7 @@ class BloomTest:
         BloomTest.write_to_file("Normal IBLT", test_set_size, table_size, symmetric_difference,
                                 average_table_size, table_creation_time, comparison_time, result[2])
         # Test Random IBLT
-        key = randint(1, 1000)
+        key = randint(1, 100000)
         start_time = time()
         bloom1, x, y = RIBLT.generate_table(test_items1, seed_key=key, table_size=size)
         end_time = time()
@@ -155,7 +156,7 @@ if __name__ == "__main__":
     # Test table sizes from 45% to 60%
     with open("test_data.txt", "a") as test_data:
         test_data.write("General Tests\n\nTesting table sizes on static symmetric difference\n")
-    for i in range(55, 60):
+    for i in range(45, 60):
         for j in range(reps):
             BloomTest.test(test_data1, test_data2, symmetric_difference=difference, table_size=i/100)
 
