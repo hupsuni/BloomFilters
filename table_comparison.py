@@ -189,65 +189,33 @@ def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_
 if __name__ == '__main__':
 
     table_size_minmax = (40, 56, 1)
-    symmetric_difference_minmax = (25, 55, 1)
+    symmetric_difference_minmax = (45, 65, 1)
     max_hash_minmax = (3, 15, 1)
-    a_value_minmax = (-7, 8, 2)
+    a_value_minmax = (-10, 10, 2)
 
-    futures_list = []
-
-    total_tests = ((a_value_minmax[1] - a_value_minmax[0]) / a_value_minmax[2]) * \
-                  ((max_hash_minmax[1] - max_hash_minmax[0]) / max_hash_minmax[2]) * \
-                  ((symmetric_difference_minmax[1] - symmetric_difference_minmax[0]) /
-                   symmetric_difference_minmax[2]) * \
-                  ((table_size_minmax[1] - table_size_minmax[0]) / table_size_minmax[2])
+    # futures_list = []
 
     aloha_only = False
-    # with futures.ThreadPoolExecutor() as thread_manager:
+
     # Test everything in one big loop
     for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
-        for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
-                              symmetric_difference_minmax[2]):
-            for max_hash in range(max_hash_minmax[0], max_hash_minmax[1], max_hash_minmax[2]):
-                for a_val in range(a_value_minmax[0], a_value_minmax[1], a_value_minmax[2]):
-                    if a_val == a_value_minmax[0]:
-                        aloha_only = False
-                    else:
-                        aloha_only = True
-                    test_number += 1
+        test_number += 1
 
-                    # futures_list.append(thread_manager.submit(test, bloom_size=bl_size / 100,
-                    #                                           sym_difference=sym_diff / 100, a_value=a_val,
-                    #                                           max_hashes=max_hash, only_test_aloha=aloha_only,
-                    #                                           test_string=test_number))
-                    test(bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val,
-                         max_hashes=max_hash, only_test_aloha=aloha_only)
-                    print("Test %s of %s tests run" % (str(test_number), str(total_tests)))
+        test(bloom_size=bl_size / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only)
+    for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
+                          symmetric_difference_minmax[2]):
 
-        with open("test_data.json", "w") as dump_data:
-            dump_data.write(json.dumps(results_dictionary.get_all()))
+        test_number += 1
 
-    #
-    # random_data = generate_test_data(100, .2)
-    # print("%s\n%s\n%s" % (str(random_data[0]), str(random_data[1]), str(random_data[2])))
-    # count_a = 0
-    # count_b = 0
-    # count_dupes_a = 0
-    # count_dupes_b = 0
-    #
-    # for item in random_data[2]:
-    #     if item in random_data[0]:
-    #         count_a += 1
-    #     if item in random_data[1]:
-    #         count_b += 1
-    # for item in random_data[0]:
-    #     if item in random_data[1]:
-    #         count_dupes_a += 1
-    # for item in random_data[1]:
-    #     if item in random_data[0]:
-    #         count_dupes_b += 1
-    #
-    # print("List a length: %s\nList b length: %s\nDuplicates list length: %s\nItems from dupe list in a: %s\nItems "
-    #       "from duep list in b: %s\nA duplicate count: %s\nB duplicate count: %s\nA Unique: %s\nB Unique: %s " %
-    #       (str(len(random_data[0])), str(len(random_data[1])), str(len(random_data[2])), str(count_a), str(count_b),
-    #        str(count_dupes_a), str(count_dupes_b), str(len(random_data[0]) - count_dupes_a),
-    #        str(len(random_data[1]) - count_dupes_b)))
+        test(sym_difference=sym_diff / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only)
+
+    for max_hash in range(max_hash_minmax[0], max_hash_minmax[1], max_hash_minmax[2]):
+        for a_val in range(a_value_minmax[0], a_value_minmax[1], a_value_minmax[2]):
+            if a_val == a_value_minmax[0]:
+                aloha_only = False
+            else:
+                aloha_only = True
+            test_number += 1
+            test(a_value=a_val, max_hashes=max_hash, only_test_aloha=aloha_only)
+    with open("test_data.json", "w") as dump_data:
+        dump_data.write(json.dumps(results_dictionary.get_all()))
