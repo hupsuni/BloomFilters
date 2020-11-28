@@ -161,6 +161,7 @@ def test(reps=DEFAULT_REPS, test_size=DEFAULT_TEST_SIZE, bloom_size=DEFAULT_BLOO
     for table in counters.keys():
         if only_test_aloha and table != "ALOHA":
             continue
+        results_dictionary[table][label_name][test_iteration]["set_size"] = test_size
         results_dictionary[table][label_name][test_iteration]["average_creation_time"] = counters[table][0] / reps
         results_dictionary[table][label_name][test_iteration]["average_comparison_time"] = counters[table][1] / reps
         results_dictionary[table][label_name][test_iteration]["success_rate"] = counters[table][2] / reps
