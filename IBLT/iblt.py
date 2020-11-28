@@ -103,6 +103,7 @@ class IBloomLT:
         for index in range(m):
             if table3[index][1] != 0:
                 success = "Failed"
+        print("IBLT: %s" %success)
         return table1_differences, table2_differences, success
 
     def peel_element(self, element_id, table, alteration):

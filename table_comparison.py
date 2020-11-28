@@ -1,36 +1,47 @@
 import json
 from datetime import datetime
-from aloha_iblt import IBLT as ALOHA
-from iblt import IBloomLT as IBLT
-from random_iblt import RIBLT
+from pprint import pprint
+
+from ALOHA_IBLT.aloha_iblt import IBLT as ALOHA
+from IBLT.iblt import IBloomLT as IBLT
+from Random_IBLT.random_iblt import RIBLT
 from random import randint, seed, shuffle
 from threadsafe_dictionary import TSDict
 from concurrent import futures
 import threading
 
-DEFAULT_TEST_SIZE = 1000000
-DEFAULT_SYMMETRIC_DIFFERENCE = .4
-DEFAULT_BLOOM_SIZE = .6
+DEFAULT_TEST_SIZE = 100000
+DEFAULT_SYMMETRIC_DIFFERENCE = .3
+DEFAULT_BLOOM_SIZE = .7
 DEFAULT_REPS = 10
-DEFAULT_A_VALUE = 0
+DEFAULT_A_VALUE = 0.0
 DEFAULT_MAX_HASHES = 10
 
 test_number = 0
 
-results_dictionary = TSDict.instance()
+# results_dictionary = TSDict.instance()
 
 
-# results_dictionary = {
-#     "IBLT": {
-#
-#     },
-#     "ALOHA": {
-#
-#     },
-#     "RIBLT": {
-#
-#     }
-# }
+results_dictionary = {
+    "IBLT": {
+        "bloom_size": {},
+        "symmetric_difference": {},
+        "max_hash_and_a_values": {}
+
+    },
+    "ALOHA": {
+        "bloom_size": {},
+        "symmetric_difference": {},
+        "max_hash_and_a_values": {}
+
+    },
+    "RIBLT": {
+        "bloom_size": {},
+        "symmetric_difference": {},
+        "max_hash_and_a_values": {}
+
+    }
+}
 
 
 def dictionary_test_key():
@@ -43,9 +54,10 @@ def dictionary_test_key():
 
 
 def verify_results(test_data, result):
-    success = True
+    success = False
 
     if len(result[0]) == len(test_data[3]) and len(result[1]) == len(test_data[4]):
+        success = True
         for item in result[0]:
             if item not in test_data[3]:
                 success = False
@@ -62,23 +74,29 @@ def verify_results(test_data, result):
 
 
 def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAULT_SYMMETRIC_DIFFERENCE,
-         a_value=DEFAULT_A_VALUE, max_hashes=DEFAULT_MAX_HASHES, only_test_aloha=False, test_string=None):
+         a_value=DEFAULT_A_VALUE, max_hashes=DEFAULT_MAX_HASHES, only_test_aloha=False, test_name=None, test_number=0):
     # Bloom Table: Create time, compare time, success count, [success messages]
     counters = {"IBLT": [0, 0, 0, []],
                 "RIBLT": [0, 0, 0, []],
                 "ALOHA": [0, 0, 0, []]}
-    key_string = str(test_string)
+    test_name = str(test_name)
+
+    results_dictionary["IBLT"][test_name][test_number] = {}
+    results_dictionary["RIBLT"][test_name][test_number] = {}
+    results_dictionary["ALOHA"][test_name][test_number] = {}
+
     for i in range(0, reps):
         print("Iteration %s" % str(i))
         key = randint(1, 100000)
         test_data = generate_test_data(symmetric_difference=sym_difference)
+
         table_size = int(len(test_data[0]) * bloom_size)
         if only_test_aloha is False:
             IBLT_object = IBLT(m=table_size)
 
             start = datetime.now()
-            IBLT_a = IBLT_object.generate_table(test_data[0])
-            IBLT_b = IBLT_object.generate_table(test_data[1])
+            IBLT_a = IBLT_object.generate_table(test_data[0].copy())
+            IBLT_b = IBLT_object.generate_table(test_data[1].copy())
             stop = datetime.now()
             time_taken = stop - start
 
@@ -96,8 +114,8 @@ def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAUL
             counters["IBLT"][3].append(verify)
 
             start = datetime.now()
-            RIBLT_b = RIBLT.generate_table(test_data[0], key, table_size=table_size, max_hashes=max_hashes)
-            RIBLT_a = RIBLT.generate_table(test_data[1], key, table_size=table_size, max_hashes=max_hashes)
+            RIBLT_b = RIBLT.generate_table(test_data[0].copy(), key, table_size=table_size, max_hashes=max_hashes)
+            RIBLT_a = RIBLT.generate_table(test_data[1].copy(), key, table_size=table_size, max_hashes=max_hashes)
             stop = datetime.now()
             time_taken = stop - start
 
@@ -115,8 +133,8 @@ def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAUL
             counters["RIBLT"][3].append(verify)
 
         start = datetime.now()
-        ALOHA_a = ALOHA.generate_table(test_data[0], key, table_size=table_size, max_hashes=max_hashes, a_value=a_value)
-        ALOHA_b = ALOHA.generate_table(test_data[1], key, table_size=table_size, max_hashes=max_hashes, a_value=a_value)
+        ALOHA_a = ALOHA.generate_table(test_data[0].copy(), key, table_size=table_size, max_hashes=max_hashes, a_value=a_value)
+        ALOHA_b = ALOHA.generate_table(test_data[1].copy(), key, table_size=table_size, max_hashes=max_hashes, a_value=a_value)
         stop = datetime.now()
         time_taken = stop - start
 
@@ -142,14 +160,14 @@ def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAUL
     for table in counters.keys():
         if only_test_aloha and table != "ALOHA":
             continue
-        results_dictionary.set(table, key_string, "average_creation_time", counters[table][0] / reps)
-        results_dictionary.set(table, key_string, "average_comparison_time", counters[table][1] / reps)
-        results_dictionary.set(table, key_string, "success_rate", counters[table][2] / reps)
-        results_dictionary.set(table, key_string, "success_messages", counters[table][3].copy())
-        results_dictionary.set(table, key_string, "filter_size", bloom_size)
-        results_dictionary.set(table, key_string, "symmetric_difference", sym_difference)
-        results_dictionary.set(table, key_string, "a_value", a_value)
-        results_dictionary.set(table, key_string, "max_hashes", max_hashes)
+        results_dictionary[table][test_name][test_number]["average_creation_time"] = counters[table][0] / reps
+        results_dictionary[table][test_name][test_number]["average_comparison_time"] = counters[table][1] / reps
+        results_dictionary[table][test_name][test_number]["success_rate"] = counters[table][2] / reps
+        results_dictionary[table][test_name][test_number]["filter_size"] = bloom_size
+        results_dictionary[table][test_name][test_number]["symmetric_difference"] = sym_difference
+        results_dictionary[table][test_name][test_number]["a_value"] = a_value
+        results_dictionary[table][test_name][test_number]["max_hashes"] = max_hashes
+        results_dictionary[table][test_name][test_number]["success_messages"] = counters[table][3].copy()
 
 
 def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_SYMMETRIC_DIFFERENCE):
@@ -168,12 +186,12 @@ def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_
     # Populate a list of randomly generated increasing numbers.
     full_list = []
     last_number = 0
-    for i in range(0, 2 * quantity):
-        rand_increment = randint(0, 100)
+    for i in range(0, int(quantity + (quantity * symmetric_difference) / 2)):
+        rand_increment = randint(1, 50)
         last_number += rand_increment
         full_list.append(last_number)
 
-    second_list_indices = (int(quantity * symmetric_difference), int(quantity + quantity * symmetric_difference))
+    second_list_indices = (int(quantity * (symmetric_difference/2)), int(quantity + quantity * (symmetric_difference/2)))
 
     shuffle(full_list)
 
@@ -188,27 +206,34 @@ def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_
 
 if __name__ == '__main__':
 
-    table_size_minmax = (40, 56, 1)
-    symmetric_difference_minmax = (45, 65, 1)
+    table_size_minmax = (30, 60, 1)
+    symmetric_difference_minmax = (30, 80, 1)
     max_hash_minmax = (3, 15, 1)
-    a_value_minmax = (-10, 10, 2)
+    a_value_minmax = (-100, 100, 2)
 
     # futures_list = []
 
     aloha_only = False
 
-    # Test everything in one big loop
     for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
         test_number += 1
+        test_name = "bloom_size"
+        test(bloom_size=bl_size / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, test_name=test_name, test_number=test_number)
+        print("Test set %s" % str(test_number))
 
-        test(bloom_size=bl_size / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only)
+        with open("test_data.json", "w") as dump_data:
+            dump_data.write(json.dumps(results_dictionary))
+    test_number = 0
     for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
                           symmetric_difference_minmax[2]):
-
         test_number += 1
+        test_name = "symmetric_difference"
+        test(sym_difference=sym_diff / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, test_name=test_name, test_number=test_number)
+        print("Test set %s" % str(test_number))
 
-        test(sym_difference=sym_diff / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only)
-
+        with open("test_data.json", "w") as dump_data:
+            dump_data.write(json.dumps(results_dictionary))
+    test_number = 0
     for max_hash in range(max_hash_minmax[0], max_hash_minmax[1], max_hash_minmax[2]):
         for a_val in range(a_value_minmax[0], a_value_minmax[1], a_value_minmax[2]):
             if a_val == a_value_minmax[0]:
@@ -216,6 +241,33 @@ if __name__ == '__main__':
             else:
                 aloha_only = True
             test_number += 1
-            test(a_value=a_val, max_hashes=max_hash, only_test_aloha=aloha_only)
-    with open("test_data.json", "w") as dump_data:
-        dump_data.write(json.dumps(results_dictionary.get_all()))
+            test_name = "max_hash_and_a_values"
+            test(a_value=a_val / 10, max_hashes=max_hash, only_test_aloha=aloha_only, test_name=test_name, test_number=test_number)
+            print("Test set %s" % str(test_number))
+        with open("test_data.json", "w") as dump_data:
+            dump_data.write(json.dumps(results_dictionary))
+
+    with open("test_data.json", "r") as dumped_data:
+        results_dictionary = json.loads(dumped_data.read())
+    test_number = 0
+    test_name = "mega_test"
+
+    for bl_size in range(0, 100):
+        for sym_diff in range(0, 100):
+            for max_hash in range(1, 100):
+                for a_val in range(-100, 100):
+                    test_number += 1
+                    if a_val == a_value_minmax[0]:
+                        aloha_only = False
+                    else:
+                        aloha_only = True
+
+                    test(bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val / 10,
+                         max_hashes=max_hash, only_test_aloha=aloha_only, test_name=test_name,
+                         test_number=test_number)
+
+                    with open("test_data_mega.json", "w") as dump_data:
+                        dump_data.write(json.dumps(results_dictionary))
+
+    with open("test_data_mega.json", "w") as dump_data:
+        dump_data.write(json.dumps(results_dictionary))
