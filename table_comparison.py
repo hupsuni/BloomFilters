@@ -73,22 +73,23 @@ def verify_results(test_data, result):
         return success, "Table reported Success", True
 
 
-def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAULT_SYMMETRIC_DIFFERENCE,
-         a_value=DEFAULT_A_VALUE, max_hashes=DEFAULT_MAX_HASHES, only_test_aloha=False, test_name=None, test_number=0):
+def test(reps=DEFAULT_REPS, test_size=DEFAULT_TEST_SIZE, bloom_size=DEFAULT_BLOOM_SIZE,
+         sym_difference=DEFAULT_SYMMETRIC_DIFFERENCE, a_value=DEFAULT_A_VALUE,
+         max_hashes=DEFAULT_MAX_HASHES, only_test_aloha=False, label_name=None, test_iteration=0):
     # Bloom Table: Create time, compare time, success count, [success messages]
     counters = {"IBLT": [0, 0, 0, []],
                 "RIBLT": [0, 0, 0, []],
                 "ALOHA": [0, 0, 0, []]}
-    test_name = str(test_name)
+    label_name = str(label_name)
 
-    results_dictionary["IBLT"][test_name][test_number] = {}
-    results_dictionary["RIBLT"][test_name][test_number] = {}
-    results_dictionary["ALOHA"][test_name][test_number] = {}
+    results_dictionary["IBLT"][label_name][test_iteration] = {}
+    results_dictionary["RIBLT"][label_name][test_iteration] = {}
+    results_dictionary["ALOHA"][label_name][test_iteration] = {}
 
     for i in range(0, reps):
         print("Iteration %s" % str(i))
         key = randint(1, 100000)
-        test_data = generate_test_data(symmetric_difference=sym_difference)
+        test_data = generate_test_data(quantity=test_size, symmetric_difference=sym_difference)
 
         table_size = int(len(test_data[0]) * bloom_size)
         if only_test_aloha is False:
@@ -160,14 +161,14 @@ def test(reps=DEFAULT_REPS, bloom_size=DEFAULT_BLOOM_SIZE, sym_difference=DEFAUL
     for table in counters.keys():
         if only_test_aloha and table != "ALOHA":
             continue
-        results_dictionary[table][test_name][test_number]["average_creation_time"] = counters[table][0] / reps
-        results_dictionary[table][test_name][test_number]["average_comparison_time"] = counters[table][1] / reps
-        results_dictionary[table][test_name][test_number]["success_rate"] = counters[table][2] / reps
-        results_dictionary[table][test_name][test_number]["filter_size"] = bloom_size
-        results_dictionary[table][test_name][test_number]["symmetric_difference"] = sym_difference
-        results_dictionary[table][test_name][test_number]["a_value"] = a_value
-        results_dictionary[table][test_name][test_number]["max_hashes"] = max_hashes
-        results_dictionary[table][test_name][test_number]["success_messages"] = counters[table][3].copy()
+        results_dictionary[table][label_name][test_iteration]["average_creation_time"] = counters[table][0] / reps
+        results_dictionary[table][label_name][test_iteration]["average_comparison_time"] = counters[table][1] / reps
+        results_dictionary[table][label_name][test_iteration]["success_rate"] = counters[table][2] / reps
+        results_dictionary[table][label_name][test_iteration]["filter_size"] = bloom_size
+        results_dictionary[table][label_name][test_iteration]["symmetric_difference"] = sym_difference
+        results_dictionary[table][label_name][test_iteration]["a_value"] = a_value
+        results_dictionary[table][label_name][test_iteration]["max_hashes"] = max_hashes
+        results_dictionary[table][label_name][test_iteration]["success_messages"] = counters[table][3].copy()
 
 
 def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_SYMMETRIC_DIFFERENCE):
@@ -218,7 +219,7 @@ if __name__ == '__main__':
     for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
         test_number += 1
         test_name = "bloom_size"
-        test(bloom_size=bl_size / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, test_name=test_name, test_number=test_number)
+        test(bloom_size=bl_size / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
         print("Test set %s" % str(test_number))
 
         with open("test_data.json", "w") as dump_data:
@@ -228,7 +229,7 @@ if __name__ == '__main__':
                           symmetric_difference_minmax[2]):
         test_number += 1
         test_name = "symmetric_difference"
-        test(sym_difference=sym_diff / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, test_name=test_name, test_number=test_number)
+        test(sym_difference=sym_diff / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
         print("Test set %s" % str(test_number))
 
         with open("test_data.json", "w") as dump_data:
@@ -242,7 +243,7 @@ if __name__ == '__main__':
                 aloha_only = True
             test_number += 1
             test_name = "max_hash_and_a_values"
-            test(a_value=a_val / 10, max_hashes=max_hash, only_test_aloha=aloha_only, test_name=test_name, test_number=test_number)
+            test(a_value=a_val / 10, max_hashes=max_hash, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
             print("Test set %s" % str(test_number))
         with open("test_data.json", "w") as dump_data:
             dump_data.write(json.dumps(results_dictionary))
@@ -262,9 +263,9 @@ if __name__ == '__main__':
                     else:
                         aloha_only = True
 
-                    test(bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val / 10,
-                         max_hashes=max_hash, only_test_aloha=aloha_only, test_name=test_name,
-                         test_number=test_number)
+                    test(test_size=10000, bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val / 10,
+                         max_hashes=max_hash, only_test_aloha=aloha_only, label_name=test_name,
+                         test_iteration=test_number)
 
                     with open("test_data_mega.json", "w") as dump_data:
                         dump_data.write(json.dumps(results_dictionary))
