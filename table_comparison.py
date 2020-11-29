@@ -258,8 +258,8 @@ if __name__ == '__main__':
     test_number = 0
     test_name = "mega_test"
 
-    for bl_size in range(0, 100):
-        for sym_diff in range(0, 100):
+    for bl_size in range(1, 100):
+        for sym_diff in range(1, 100):
             for max_hash in range(1, 100):
                 for a_val in range(-100, 100):
                     test_number += 1
