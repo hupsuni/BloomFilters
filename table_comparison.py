@@ -233,8 +233,6 @@ if __name__ == '__main__':
     max_hash_minmax = (3, 15, 1)
     a_value_minmax = (-100, 100, 2)
 
-    # futures_list = []
-
     aloha_only = False
 
     for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
@@ -255,12 +253,13 @@ if __name__ == '__main__':
 
         with open("test_data.json", "w") as dump_data:
             dump_data.write(json.dumps(results_dictionary))
+
     test_number = 0
     test_name = "mega_test"
 
     for bl_size in range(1, 100):
         for sym_diff in range(1, 100):
-            for max_hash in range(1, 100):
+            for max_hash in range(2, 100):
                 for a_val in range(-100, 100):
                     test_number += 1
                     if a_val == a_value_minmax[0]:

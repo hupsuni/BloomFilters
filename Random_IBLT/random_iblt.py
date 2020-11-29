@@ -15,7 +15,7 @@ class RIBLT:
     _M = 10
     SEED_RANGE = 1000000
     MAX_HASHES = 15
-    MIN_HASHES = 3
+    MIN_HASHES = 2
     MAX_RANDOM_HASHES = 1000
 
     @staticmethod
@@ -58,7 +58,10 @@ class RIBLT:
         random.seed(seed_key)
         hash_decider = []
         for i in range(length):
-            hash_decider.append(random.randint(min_hashes, max_hashes))
+            if min_hashes < max_hashes:
+                hash_decider.append(random.randint(min_hashes, max_hashes))
+            else:
+                hash_decider.append(random.randint(1, max_hashes))
         return hash_decider
 
     @staticmethod
