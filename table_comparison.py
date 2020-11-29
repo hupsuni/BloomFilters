@@ -26,19 +26,22 @@ results_dictionary = {
     "IBLT": {
         "bloom_size": {},
         "symmetric_difference": {},
-        "max_hash_and_a_values": {}
+        "max_hash_and_a_values": {},
+        "mega_test": {}
 
     },
     "ALOHA": {
         "bloom_size": {},
         "symmetric_difference": {},
-        "max_hash_and_a_values": {}
+        "max_hash_and_a_values": {},
+        "mega_test": {}
 
     },
     "RIBLT": {
         "bloom_size": {},
         "symmetric_difference": {},
-        "max_hash_and_a_values": {}
+        "max_hash_and_a_values": {},
+        "mega_test": {}
 
     }
 }
@@ -54,23 +57,40 @@ def dictionary_test_key():
 
 
 def verify_results(test_data, result):
-    success = False
+    success = True
 
-    if len(result[0]) == len(test_data[3]) and len(result[1]) == len(test_data[4]):
-        success = True
-        for item in result[0]:
-            if item not in test_data[3]:
-                success = False
-                break
-        for item in result[1]:
-            if item not in test_data[4] or success is False:
-                success = False
-                break
+    for item in result[0]:
+        if item not in test_data[3]:
+            success = False
+            break
+    for item in result[1]:
+        if item not in test_data[4] or success is False:
+            success = False
+            break
+    for item in test_data[3]:
+        if item not in result[0]:
+            success = False
+            break
+    for item in test_data[4]:
+        if item not in result[1] or success is False:
+            success = False
+            break
+
+    reversed_lists = True
+
+    for item in result[1]:
+        if item not in test_data[3]:
+            reversed_lists = False
+            break
+    for item in result[0]:
+        if item not in test_data[4] or reversed_lists is False:
+            reversed_lists = False
+            break
 
     if result[2] == "Failed":
-        return success, "Table reported Failure", False
+        return success, reversed_lists, False
     elif result[2] == "Success":
-        return success, "Table reported Success", True
+        return success, reversed_lists, True
 
 
 def test(reps=DEFAULT_REPS, test_size=DEFAULT_TEST_SIZE, bloom_size=DEFAULT_BLOOM_SIZE,
@@ -236,22 +256,6 @@ if __name__ == '__main__':
         with open("test_data.json", "w") as dump_data:
             dump_data.write(json.dumps(results_dictionary))
     test_number = 0
-    for max_hash in range(max_hash_minmax[0], max_hash_minmax[1], max_hash_minmax[2]):
-        for a_val in range(a_value_minmax[0], a_value_minmax[1], a_value_minmax[2]):
-            if a_val == a_value_minmax[0]:
-                aloha_only = False
-            else:
-                aloha_only = True
-            test_number += 1
-            test_name = "max_hash_and_a_values"
-            test(a_value=a_val / 10, max_hashes=max_hash, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
-            print("Test set %s" % str(test_number))
-        with open("test_data.json", "w") as dump_data:
-            dump_data.write(json.dumps(results_dictionary))
-
-    with open("test_data.json", "r") as dumped_data:
-        results_dictionary = json.loads(dumped_data.read())
-    test_number = 0
     test_name = "mega_test"
 
     for bl_size in range(0, 100):
@@ -264,7 +268,7 @@ if __name__ == '__main__':
                     else:
                         aloha_only = True
 
-                    test(test_size=10000, bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val / 10,
+                    test(test_size=1000, bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val / 10,
                          max_hashes=max_hash, only_test_aloha=aloha_only, label_name=test_name,
                          test_iteration=test_number)
 
