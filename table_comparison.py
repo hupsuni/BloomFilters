@@ -26,21 +26,18 @@ results_dictionary = {
     "IBLT": {
         "bloom_size": {},
         "symmetric_difference": {},
-        "max_hash_and_a_values": {},
         "mega_test": {}
 
     },
     "ALOHA": {
         "bloom_size": {},
         "symmetric_difference": {},
-        "max_hash_and_a_values": {},
         "mega_test": {}
 
     },
     "RIBLT": {
         "bloom_size": {},
         "symmetric_difference": {},
-        "max_hash_and_a_values": {},
         "mega_test": {}
 
     }
@@ -107,7 +104,8 @@ def test(reps=DEFAULT_REPS, test_size=DEFAULT_TEST_SIZE, bloom_size=DEFAULT_BLOO
     results_dictionary["ALOHA"][label_name][test_iteration] = {}
 
     for i in range(0, reps):
-        print("Iteration %s" % str(i))
+        # print("Iteration %s" % str(i))
+        seed()
         key = randint(1, 100000)
         test_data = generate_test_data(quantity=test_size, symmetric_difference=sym_difference)
 
@@ -228,51 +226,57 @@ def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_
 
 if __name__ == '__main__':
 
-    table_size_minmax = (30, 60, 1)
-    symmetric_difference_minmax = (30, 80, 1)
-    max_hash_minmax = (3, 15, 1)
-    a_value_minmax = (-100, 100, 2)
+    try:
+        table_size_minmax = (30, 60, 1)
+        symmetric_difference_minmax = (30, 80, 1)
+        max_hash_minmax = (3, 15, 1)
+        a_value_minmax = (-100, 100, 2)
 
-    aloha_only = False
+        aloha_only = False
 
-    for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
-        test_number += 1
-        test_name = "bloom_size"
-        test(bloom_size=bl_size / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
-        print("Test set %s" % str(test_number))
+        for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
+            test_number += 1
+            test_name = "bloom_size"
+            test(bloom_size=bl_size / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
+            print("Test set %s" % str(test_number))
 
-        with open("test_data.json", "w") as dump_data:
+            with open("test_data.json", "w") as dump_data:
+                dump_data.write(json.dumps(results_dictionary))
+        test_number = 0
+        for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
+                              symmetric_difference_minmax[2]):
+            test_number += 1
+            test_name = "symmetric_difference"
+            test(sym_difference=sym_diff / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
+            print("Test set %s" % str(test_number))
+
+            with open("test_data.json", "w") as dump_data:
+                dump_data.write(json.dumps(results_dictionary))
+
+        test_number = 0
+        test_name = "mega_test"
+        print(datetime.now())
+        for bl_size in range(20, 81, 5):
+            for sym_diff in range(10, 90, 5):
+                for max_hash in [3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 40]:  # range(3, 50, 2):
+                    for a_val in range(-100, 100, 5):
+                        test_number += 1
+                        if a_val == a_value_minmax[0]:
+                            aloha_only = False
+                        else:
+                            aloha_only = True
+                        if test_number % 100 == 0:
+                            print("Test %s starting" % str(test_number))
+                        test(reps=5, test_size=500, bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val / 10,
+                             max_hashes=max_hash, only_test_aloha=aloha_only, label_name=test_name,
+                             test_iteration=test_number)
+                print("One max_hash test set has completed at %s" % str(datetime.now()))
+            print("One symmetric_difference test set has completed at %s" % str(datetime.now()))
+            print("Tests %%%s complete" % str(100 * (bl_size - 15) / (80 - 15)))
+        with open("test_data_mega.json", "w") as dump_data:
             dump_data.write(json.dumps(results_dictionary))
-    test_number = 0
-    for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
-                          symmetric_difference_minmax[2]):
-        test_number += 1
-        test_name = "symmetric_difference"
-        test(sym_difference=sym_diff / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
-        print("Test set %s" % str(test_number))
-
-        with open("test_data.json", "w") as dump_data:
+    except (Exception, KeyboardInterrupt):
+        with open("early_exit_test_data.json", "w") as dump_data:
             dump_data.write(json.dumps(results_dictionary))
-
-    test_number = 0
-    test_name = "mega_test"
-
-    for bl_size in range(1, 100):
-        for sym_diff in range(1, 100):
-            for max_hash in range(2, 100):
-                for a_val in range(-100, 100):
-                    test_number += 1
-                    if a_val == a_value_minmax[0]:
-                        aloha_only = False
-                    else:
-                        aloha_only = True
-
-                    test(test_size=1000, bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val / 10,
-                         max_hashes=max_hash, only_test_aloha=aloha_only, label_name=test_name,
-                         test_iteration=test_number)
-
-                    with open("test_data_mega.json", "w") as dump_data:
-                        dump_data.write(json.dumps(results_dictionary))
-
-    with open("test_data_mega.json", "w") as dump_data:
-        dump_data.write(json.dumps(results_dictionary))
+        with open("errorlog.txt", "a") as dump_data:
+            dump_data.write("Crash occurred at %s\n" % str(datetime.now()))

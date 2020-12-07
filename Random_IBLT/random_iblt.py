@@ -174,7 +174,8 @@ class RIBLT:
         for index in range(table_size):
             if table3[index][1] != 0:
                 success = "Failed"
-        print("RIBLT: %s" % success)
+                break
+        # print("RIBLT: %s" % success)
         return table1_differences, table2_differences, success
 
     @staticmethod

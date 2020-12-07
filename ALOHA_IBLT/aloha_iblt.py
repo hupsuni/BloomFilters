@@ -168,7 +168,8 @@ class IBLT:
         for index in range(table_size):
             if table3[index][1] != 0:
                 success = "Failed"
-        print("ALOHA: %s" % success)
+                break
+        # print("ALOHA: %s" % success)
         return table1_differences, table2_differences, success
 
     @staticmethod
