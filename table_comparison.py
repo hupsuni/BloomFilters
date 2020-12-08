@@ -256,10 +256,15 @@ if __name__ == '__main__':
         test_number = 0
         test_name = "mega_test"
         print(datetime.now())
-        for bl_size in range(20, 81, 5):
-            for sym_diff in range(10, 90, 5):
-                for max_hash in [3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 40]:  # range(3, 50, 2):
-                    for a_val in range(-100, 100, 5):
+
+        table_size_minmax = (20, 82, 2)
+        symmetric_difference_minmax = (10, 92, 2)
+
+        for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
+            for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
+                                  symmetric_difference_minmax[2]):
+                for max_hash in [3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 50, 75, 100]:  # range(3, 50, 2):
+                    for a_val in range(-100, 100, 1):
                         test_number += 1
                         if a_val == a_value_minmax[0]:
                             aloha_only = False
@@ -267,12 +272,15 @@ if __name__ == '__main__':
                             aloha_only = True
                         if test_number % 100 == 0:
                             print("Test %s starting" % str(test_number))
-                        test(reps=5, test_size=500, bloom_size=bl_size / 100, sym_difference=sym_diff / 100, a_value=a_val / 10,
-                             max_hashes=max_hash, only_test_aloha=aloha_only, label_name=test_name,
+                        test(reps=5, test_size=500, bloom_size=bl_size / 100, sym_difference=sym_diff / 100,
+                             a_value=a_val / 10, max_hashes=max_hash, only_test_aloha=aloha_only, label_name=test_name,
                              test_iteration=test_number)
-                print("One max_hash test set has completed at %s" % str(datetime.now()))
-            print("One symmetric_difference test set has completed at %s" % str(datetime.now()))
-            print("Tests %%%s complete" % str(100 * (bl_size - 15) / (80 - 15)))
+                print("One max_hash test set for sym diff value %s has completed at %s" %
+                      (str(sym_diff), str(datetime.now())))
+            print("One sym_diff test set for bl size value %s has completed at %s" %
+                  (str(bl_size), str(datetime.now())))
+            print("Tests %%%s complete" % str(100 * (bl_size - (table_size_minmax[0] - table_size_minmax[2])) /
+                                              (table_size_minmax[1] - table_size_minmax[0])))
         with open("test_data_mega.json", "w") as dump_data:
             dump_data.write(json.dumps(results_dictionary))
     except (Exception, KeyboardInterrupt):
