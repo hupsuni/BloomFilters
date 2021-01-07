@@ -233,25 +233,25 @@ if __name__ == '__main__':
         a_value_minmax = (-100, 100, 2)
 
         aloha_only = False
-
-        for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
-            test_number += 1
-            test_name = "bloom_size"
-            test(bloom_size=bl_size / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
-            print("Test set %s" % str(test_number))
-
-            with open("test_data.json", "w") as dump_data:
-                dump_data.write(json.dumps(results_dictionary))
-        test_number = 0
-        for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
-                              symmetric_difference_minmax[2]):
-            test_number += 1
-            test_name = "symmetric_difference"
-            test(sym_difference=sym_diff / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
-            print("Test set %s" % str(test_number))
-
-            with open("test_data.json", "w") as dump_data:
-                dump_data.write(json.dumps(results_dictionary))
+        #
+        # for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
+        #     test_number += 1
+        #     test_name = "bloom_size"
+        #     test(bloom_size=bl_size / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
+        #     print("Test set %s" % str(test_number))
+        #
+        #     with open("test_data.json", "w") as dump_data:
+        #         dump_data.write(json.dumps(results_dictionary))
+        # test_number = 0
+        # for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
+        #                       symmetric_difference_minmax[2]):
+        #     test_number += 1
+        #     test_name = "symmetric_difference"
+        #     test(sym_difference=sym_diff / 100, a_value=0, max_hashes=12, only_test_aloha=aloha_only, label_name=test_name, test_iteration=test_number)
+        #     print("Test set %s" % str(test_number))
+        #
+        #     with open("test_data.json", "w") as dump_data:
+        #         dump_data.write(json.dumps(results_dictionary))
 
         test_number = 0
         test_name = "mega_test"

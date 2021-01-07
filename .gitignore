@@ -6,3 +6,8 @@ Random_IBLT/__pycache__/
 __pycache__/
 */__pycache__/
 *.txt
+laptop_test_data_mega.json
+
+server_test_data_mega.json
+
+early_exit_test_data.json
