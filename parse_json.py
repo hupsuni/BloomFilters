@@ -78,7 +78,7 @@ if __name__ == '__main__':
     results = {"IBLT": [], "RIBLT": [], "ALOHA": []}
 
     for table_name in results.keys():
-        tc.recalculate_success_rates(table_name=table_name)
+        # tc.recalculate_success_rates(table_name=table_name)
         results[table_name] = tc.display_results(table_name=table_name)
 
     data_info = {"IBLT": {}, "RIBLT": {}, "ALOHA": {}}
@@ -106,7 +106,8 @@ if __name__ == '__main__':
                             if result[field] > metrics[field]["max"]:
                                 metrics[field]["max"] = result[field]
 
-                    data_info[table_name]["%s: Success: %s Value: %s" % (metric, success_rate, metric_value)] = {
+                    data_info[table_name]["%s: %s, Success: %s, Count: %s" %
+                                          (metric, metric_value, success_rate, result_count)] = {
                         "table_name": table_name,
                         "metric": metric,
                         "success_rate": success_rate,

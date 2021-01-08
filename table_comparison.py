@@ -54,22 +54,28 @@ def dictionary_test_key():
 
 
 def verify_results(test_data, result):
+    r1 = []
+    r2 = []
+    for element in result[0]:
+        r1.append(element[0])
+    for element in result[1]:
+        r2.append(element[0])
     success = True
 
-    for item in result[0]:
+    for item in r1:
         if item not in test_data[3]:
             success = False
             break
-    for item in result[1]:
+    for item in r2:
         if item not in test_data[4] or success is False:
             success = False
             break
     for item in test_data[3]:
-        if item not in result[0]:
+        if item not in r1:
             success = False
             break
     for item in test_data[4]:
-        if item not in result[1] or success is False:
+        if item not in r2 or success is False:
             success = False
             break
 
@@ -152,8 +158,10 @@ def test(reps=DEFAULT_REPS, test_size=DEFAULT_TEST_SIZE, bloom_size=DEFAULT_BLOO
             counters["RIBLT"][3].append(verify)
 
         start = datetime.now()
-        ALOHA_a = ALOHA.generate_table(test_data[0].copy(), key, table_size=table_size, max_hashes=max_hashes, a_value=a_value)
-        ALOHA_b = ALOHA.generate_table(test_data[1].copy(), key, table_size=table_size, max_hashes=max_hashes, a_value=a_value)
+        ALOHA_a = ALOHA.generate_table(test_data[0].copy(), key, table_size=table_size, max_hashes=max_hashes,
+                                       a_value=a_value)
+        ALOHA_b = ALOHA.generate_table(test_data[1].copy(), key, table_size=table_size, max_hashes=max_hashes,
+                                       a_value=a_value)
         stop = datetime.now()
         time_taken = stop - start
 
@@ -211,7 +219,8 @@ def generate_test_data(quantity=DEFAULT_TEST_SIZE, symmetric_difference=DEFAULT_
         last_number += rand_increment
         full_list.append(last_number)
 
-    second_list_indices = (int(quantity * (symmetric_difference/2)), int(quantity + quantity * (symmetric_difference/2)))
+    second_list_indices = (
+    int(quantity * (symmetric_difference / 2)), int(quantity + quantity * (symmetric_difference / 2)))
 
     shuffle(full_list)
 
@@ -257,8 +266,8 @@ if __name__ == '__main__':
         test_name = "mega_test"
         print(datetime.now())
 
-        table_size_minmax = (20, 82, 2)
-        symmetric_difference_minmax = (10, 92, 2)
+        table_size_minmax = (26, 82, 2)
+        symmetric_difference_minmax = (26, 76, 2)
 
         for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
             for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
@@ -283,7 +292,14 @@ if __name__ == '__main__':
                                               (table_size_minmax[1] - table_size_minmax[0])))
         with open("test_data_mega.json", "w") as dump_data:
             dump_data.write(json.dumps(results_dictionary))
-    except (Exception, KeyboardInterrupt):
+
+        # test(reps=1, test_size=100000, bloom_size=.8, sym_difference=.2, a_value=0,
+        #            only_test_aloha=True, label_name="mega_test")
+        # with open("comp_test.json", "w") as dump_data:
+        #     dump_data.write(json.dumps(results_dictionary))
+
+    except (Exception, KeyboardInterrupt) as e:
+
         with open("early_exit_test_data.json", "w") as dump_data:
             dump_data.write(json.dumps(results_dictionary))
         with open("errorlog.txt", "a") as dump_data:
