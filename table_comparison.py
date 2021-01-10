@@ -105,8 +105,9 @@ def test(reps=DEFAULT_REPS, test_size=DEFAULT_TEST_SIZE, bloom_size=DEFAULT_BLOO
                 "ALOHA": [0, 0, 0, []]}
     label_name = str(label_name)
 
-    results_dictionary["IBLT"][label_name][test_iteration] = {}
-    results_dictionary["RIBLT"][label_name][test_iteration] = {}
+    if aloha_only is False:
+        results_dictionary["IBLT"][label_name][test_iteration] = {}
+        results_dictionary["RIBLT"][label_name][test_iteration] = {}
     results_dictionary["ALOHA"][label_name][test_iteration] = {}
 
     for i in range(0, reps):
@@ -266,14 +267,14 @@ if __name__ == '__main__':
         test_name = "mega_test"
         print(datetime.now())
 
-        table_size_minmax = (26, 82, 2)
-        symmetric_difference_minmax = (26, 76, 2)
+        table_size_minmax = (34, 75, 2)
+        symmetric_difference_minmax = (30, 55, 2)
 
         for bl_size in range(table_size_minmax[0], table_size_minmax[1], table_size_minmax[2]):
             for sym_diff in range(symmetric_difference_minmax[0], symmetric_difference_minmax[1],
                                   symmetric_difference_minmax[2]):
-                for max_hash in [3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 50, 75, 100]:  # range(3, 50, 2):
-                    for a_val in range(-100, 100, 1):
+                for max_hash in [3, 4, 5, 6, 7, 8, 9, 10]:  # range(3, 50, 2):
+                    for a_val in range(-100, 101, 5):
                         test_number += 1
                         if a_val == a_value_minmax[0]:
                             aloha_only = False
