@@ -2,17 +2,19 @@ import json
 import math
 import traceback
 from pprint import pprint
+import sqlite3
 
 DEFAULT_FILE_NAME = "test_data_mega.json"
+DATABASE_FILE = "test_results.db"
 
 
 class TestCalculator:
     test_data = None
     markers = {"IBLT": {
-            "filter_size": {},
-            "symmetric_difference": {},
-            "a_value": {},
-            "max_hashes": {}},
+        "filter_size": {},
+        "symmetric_difference": {},
+        "a_value": {},
+        "max_hashes": {}},
         "RIBLT": {
             "filter_size": {},
             "symmetric_difference": {},
@@ -51,13 +53,14 @@ class TestCalculator:
                 for marker in self.markers[table_name].keys():
                     if marker == "total_tests":
                         continue
-                    if self.test_data[table_name][test_name][iteration][marker] not in self.markers[table_name][marker].keys():
+                    if self.test_data[table_name][test_name][iteration][marker] not in self.markers[table_name][
+                        marker].keys():
                         self.markers[table_name][marker][self.test_data[table_name][test_name][iteration][marker]] = {}
             except KeyError as e:
                 print("%s at data_ranges for %s" % (e, table_name))
                 pass
 
-    def display_results(self, test_name="mega_test", table_name="IBLT", min_success_rate=0.8):
+    def display_results(self, test_name="mega_test", table_name="IBLT", min_success_rate=.2):
         test_log = []
         markers = self.markers.copy()
 
@@ -70,8 +73,8 @@ class TestCalculator:
                             continue
                         if self.test_data[table_name][test_name][test_iteration] != {} and \
                                 self.test_data[table_name][test_name][test_iteration]["success_rate"] not in \
-                                markers[table_name][key][self.test_data[table_name][test_name][test_iteration][key]].keys():
-
+                                markers[table_name][key][
+                                    self.test_data[table_name][test_name][test_iteration][key]].keys():
                             markers[table_name][key][self.test_data[table_name][test_name][test_iteration][key]][
                                 self.test_data[table_name][test_name][test_iteration]["success_rate"]
                             ] = []
@@ -91,21 +94,24 @@ class TestCalculator:
     def print_json(self):
         print(self.test_data.keys())
 
+    def load_test_file(self, filename=DEFAULT_FILE_NAME):
+        self.read_json_file(filename)
+        return self.test_data.copy()
 
-if __name__ == '__main__':
-    tc = TestCalculator()
+
+def parse_results():
     tc.read_json_file()
 
     results = {"IBLT": {}, "RIBLT": {}, "ALOHA": {}}
     results_log = {"IBLT": {}, "RIBLT": {}, "ALOHA": {}}
 
-    for bloom_table_name in results.keys():
+    for bloom_table_name in ["RIBLT"]:  # results.keys():
         tc.generate_data_ranges(table_name=bloom_table_name)
         # tc.recalculate_success_rates(table_name=bloom_table_name)
         # results[bloom_table_name], results_log[bloom_table_name], results[bloom_table_name]["total_tests"] = \
-        results[bloom_table_name] = \
-            tc.display_results(table_name=bloom_table_name).copy()
-        print(results[bloom_table_name]["a_value"].keys())
+        tc.display_results(table_name=bloom_table_name)
+
+    results = tc.markers.copy()
 
     data_info = {"IBLT": {}, "RIBLT": {}, "ALOHA": {}}
 
@@ -160,3 +166,72 @@ if __name__ == '__main__':
     #                                                      entry["results"]["max_hashes"],
     #                                                      entry["results"]["a_value"],
     #                                                      entry["results"]["success_rate"]))
+
+
+def results_to_database():
+    conn = sqlite3.connect(DATABASE_FILE)
+    cursor = conn.cursor()
+    cursor.execute("PRAGMA foreign_keys = ON")
+    cursor.execute("""CREATE TABLE IF NOT EXISTS BloomTableType(
+                        name        varchar(40),
+                        PRIMARY KEY (name) ) """)
+    try:
+        cursor.execute("""INSERT INTO BloomTableType(name) VALUES(?)""", ['IBLT'])
+        cursor.execute("""INSERT INTO BloomTableType(name) VALUES(?)""", ['RIBLT'])
+        cursor.execute("""INSERT INTO BloomTableType(name) VALUES(?) """, ['ALOHA'])
+    except (SyntaxError, sqlite3.IntegrityError):
+        pass
+
+    cursor.execute(""" CREATE TABLE IF NOT EXISTS TestData(
+                            name                    varchar(40),
+                            test_no                 integer,
+                            set_size                float,
+                            filter_size             float,
+                            average_creation_time   float,
+                            average_comparison_time float,
+                            reported_success_rate   float,
+                            verified_success_rate   float,
+                            symmetric_difference    float,
+                            a_value                 float,
+                            max_hashes              integer,
+                            PRIMARY KEY             (name, test_no),
+                            CONSTRAINT              name
+                             FOREIGN KEY            (name)
+                             REFERENCES             BloomTableType(name)
+                                                    ON UPDATE CASCADE
+                                                    ON DELETE CASCADE) """)
+    conn.commit()
+
+    results = tc.load_test_file()
+
+    for t_name in results.keys():
+        for test_no in results[t_name]["mega_test"].keys():
+            try:
+                success_rate = 0
+                for success_message in results[t_name]["mega_test"][test_no]["success_messages"]:
+                    if success_message[2] is True:
+                        success_rate += 1
+                success_rate = success_rate / len(results[t_name]["mega_test"][test_no]["success_messages"])
+                conn.execute("""INSERT INTO TestData VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""", (t_name, test_no,
+                                                          results[t_name]["mega_test"][test_no]["set_size"],
+                                                          results[t_name]["mega_test"][test_no]["filter_size"],
+                                                          results[t_name]["mega_test"][test_no][
+                                                                                           "average_creation_time"],
+                                                          results[t_name]["mega_test"][test_no][
+                                                                                           "average_comparison_time"],
+                                                          success_rate,
+                                                          results[t_name]["mega_test"][test_no]["success_rate"],
+                                                          results[t_name]["mega_test"][test_no]["symmetric_difference"],
+                                                          results[t_name]["mega_test"][test_no]["a_value"],
+                                                          results[t_name]["mega_test"][test_no]["max_hashes"]))
+            except (sqlite3.IntegrityError, KeyError) as e:
+                print(str(e))
+    conn.commit()
+
+
+tc = None
+
+if __name__ == '__main__':
+    tc = TestCalculator()
+    # parse_results()
+    results_to_database()
